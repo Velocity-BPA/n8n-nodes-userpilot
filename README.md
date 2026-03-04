@@ -1,186 +1,245 @@
 # n8n-nodes-userpilot
 
-> **NOTICE:** This software is licensed under the Business Source License 1.1 (BSL-1.1).  
-> Commercial use requires a separate commercial license from Velocity BPA.  
-> Contact: licensing@velobpa.com
+> **[Velocity BPA Licensing Notice]**
+>
+> This n8n node is licensed under the Business Source License 1.1 (BSL 1.1).
+>
+> Use of this node by for-profit organizations in production environments requires a commercial license from Velocity BPA.
+>
+> For licensing information, visit https://velobpa.com/licensing or contact licensing@velobpa.com.
 
-This is an n8n community node for [UserPilot](https://userpilot.com/), the product growth and user onboarding platform.
+This n8n community node provides comprehensive integration with UserPilot's user onboarding and product adoption platform. With 5+ resources implemented, it enables automated user journey management, onboarding flow creation, survey deployment, user segmentation, and checklist management through n8n workflows.
 
-UserPilot helps product teams increase user adoption through targeted in-app experiences, surveys, and analytics without code changes.
+![n8n Community Node](https://img.shields.io/badge/n8n-Community%20Node-blue)
+![License](https://img.shields.io/badge/license-BSL--1.1-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
+![UserPilot](https://img.shields.io/badge/UserPilot-API-orange)
+![Onboarding](https://img.shields.io/badge/Onboarding-Automation-green)
+![User Journey](https://img.shields.io/badge/User%20Journey-Management-purple)
+
+## Features
+
+- **User Management** - Create, update, and manage user profiles with custom properties and behavioral tracking
+- **Onboarding Flows** - Trigger and control interactive product tours and onboarding sequences
+- **Dynamic Checklists** - Generate and manage personalized onboarding checklists based on user segments
+- **User Segmentation** - Create and manage dynamic user segments for targeted experiences
+- **Survey Automation** - Deploy NPS, CSAT, and custom surveys to collect user feedback
+- **Event Tracking** - Track custom events and user interactions for behavioral analysis
+- **Goal Monitoring** - Set up and monitor user completion goals and milestones
+- **Real-time Sync** - Bidirectional data synchronization with external systems and databases
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+### Community Nodes (Recommended)
 
-## Credentials
+1. Open n8n
+2. Go to **Settings** → **Community Nodes**
+3. Click **Install a community node**
+4. Enter `n8n-nodes-userpilot`
+5. Click **Install**
 
-To use this node, you need a UserPilot API token:
+### Manual Installation
 
-1. Log in to your UserPilot account
-2. Navigate to Settings > Environment Page
-3. Copy your API Token (also called Write Token)
-4. Create credentials in n8n using this token
+```bash
+cd ~/.n8n
+npm install n8n-nodes-userpilot
+```
 
-For Enterprise/EU deployments, you can specify a custom endpoint URL.
+### Development Installation
 
-## Supported Resources (12)
+```bash
+git clone https://github.com/Velocity-BPA/n8n-nodes-userpilot.git
+cd n8n-nodes-userpilot
+npm install
+npm run build
+mkdir -p ~/.n8n/custom
+ln -s $(pwd) ~/.n8n/custom/n8n-nodes-userpilot
+n8n start
+```
 
-### User
-- **Identify** - Identify or create a user
-- **Update** - Update user properties
-- **Get** - Get user details
-- **Delete** - Delete a user
-- **List** - List all users
-- **Search** - Search users by property
-- **Bulk Update** - Batch update multiple users
-- **Bulk Import** - Import users from CSV
-- **Get Events** - Get user event history
-- **Get Flows** - Get user flow interactions
-- **Merge** - Merge duplicate users
+## Credentials Setup
 
-### Company
-- **Identify** - Identify or create a company
-- **Update** - Update company properties
-- **Get** - Get company details
-- **Delete** - Delete a company
-- **List** - List all companies
-- **Search** - Search companies by property
-- **Bulk Update** - Batch update multiple companies
-- **Get Users** - Get users in company
-- **Get Analytics** - Get company engagement data
+| Field | Description | Required |
+|-------|-------------|----------|
+| API Token | Your UserPilot API token from Settings > Integrations > API | Yes |
+| App ID | Your UserPilot application ID | Yes |
+| Environment | Environment (production/staging) | No |
 
-### Event
-- **Track** - Track a custom event
-- **Bulk Track** - Batch track multiple events
-- **Bulk Import** - Import events from CSV
-- **List Definitions** - List all tracked event types
-- **Get Definition** - Get event type details
-- **Create Definition** - Define a new event type
-- **Get Analytics** - Get event metrics
+## Resources & Operations
 
-### Flow
-- **List** - List all flows
-- **Get** - Get flow details
-- **Create** - Create a new flow
-- **Update** - Update flow settings
-- **Delete** - Delete a flow
-- **Trigger** - Trigger a flow for a user
-- **Publish** - Publish a flow
-- **Unpublish** - Unpublish a flow
-- **Get Analytics** - Get flow metrics
-- **Duplicate** - Clone a flow
+### 1. Users
 
-### NPS Survey
-- **List** - List all NPS surveys
-- **Get** - Get NPS survey details
-- **Create** - Create an NPS survey
-- **Update** - Update NPS settings
-- **Delete** - Delete an NPS survey
-- **Get Responses** - Get NPS responses
-- **Publish** - Publish a survey
-- **Unpublish** - Unpublish a survey
-- **Get Analytics** - Get NPS trends
-- **Export Data** - Export NPS data
+| Operation | Description |
+|-----------|-------------|
+| Create | Create a new user profile with custom properties |
+| Update | Update existing user information and attributes |
+| Get | Retrieve user details and associated data |
+| Delete | Remove user from UserPilot |
+| List | Get paginated list of users with filtering options |
+| Track Event | Record custom events for user behavioral tracking |
 
-### Checklist
-- **List** - List all checklists
-- **Get** - Get checklist details
-- **Create** - Create a checklist
-- **Update** - Update a checklist
-- **Delete** - Delete a checklist
-- **Publish** - Publish a checklist
-- **Unpublish** - Unpublish a checklist
-- **Get Analytics** - Get completion metrics
-- **Get User Progress** - Get user checklist progress
+### 2. Flows
 
-### Resource Center
-- **Get** - Get resource center config
-- **Update** - Update resource center
-- **List Modules** - List resource center modules
-- **Create Module** - Create a module
-- **Update Module** - Update a module
-- **Delete Module** - Delete a module
-- **Reorder Modules** - Reorder modules
-- **Get Module Analytics** - Get module engagement
+| Operation | Description |
+|-----------|-------------|
+| Create | Create new onboarding flow or product tour |
+| Update | Modify existing flow content and targeting |
+| Get | Retrieve flow details and statistics |
+| Delete | Remove flow from account |
+| List | Get all flows with filtering and pagination |
+| Trigger | Manually trigger flow for specific users |
+| Pause | Pause active flow |
+| Resume | Resume paused flow |
 
-### Segment
-- **List** - List all segments
-- **Get** - Get segment details
-- **Create** - Create a segment
-- **Update** - Update a segment
-- **Delete** - Delete a segment
-- **Get Users** - Get users in segment
-- **Get Size** - Get segment member count
+### 3. Checklists
 
-### Data Export
-- **Create** - Create an export job
-- **Get Status** - Check export status
-- **Download** - Download export file
-- **List** - List export jobs
-- **Cancel** - Cancel pending export
+| Operation | Description |
+|-----------|-------------|
+| Create | Create new onboarding checklist |
+| Update | Modify checklist items and completion criteria |
+| Get | Retrieve checklist details and progress |
+| Delete | Remove checklist |
+| List | Get all checklists with filtering options |
+| Mark Complete | Mark checklist item as completed for user |
+| Reset Progress | Reset user's checklist progress |
 
-### Job
-- **Get Status** - Get job status
-- **List** - List recent jobs
-- **Cancel** - Cancel pending job
-- **Retry** - Retry failed job
-- **Get Errors** - Get job error details
+### 4. Segments
 
-### Spotlight
-- **List** - List all spotlights
-- **Get** - Get spotlight details
-- **Create** - Create a spotlight
-- **Update** - Update a spotlight
-- **Delete** - Delete a spotlight
-- **Publish** - Publish a spotlight
-- **Unpublish** - Unpublish a spotlight
-- **Get Analytics** - Get spotlight metrics
+| Operation | Description |
+|-----------|-------------|
+| Create | Create new user segment with targeting rules |
+| Update | Modify segment criteria and conditions |
+| Get | Retrieve segment details and user count |
+| Delete | Remove segment |
+| List | Get all segments with pagination |
+| Get Users | Retrieve users belonging to specific segment |
 
-### Banner
-- **List** - List all banners
-- **Get** - Get banner details
-- **Create** - Create a banner
-- **Update** - Update a banner
-- **Delete** - Delete a banner
-- **Publish** - Publish a banner
-- **Unpublish** - Unpublish a banner
-- **Get Analytics** - Get banner metrics
+### 5. Surveys
 
-## Trigger Node
+| Operation | Description |
+|-----------|-------------|
+| Create | Create new survey (NPS, CSAT, custom) |
+| Update | Modify survey questions and targeting |
+| Get | Retrieve survey details and responses |
+| Delete | Remove survey |
+| List | Get all surveys with filtering options |
+| Get Responses | Retrieve survey response data |
+| Send | Manually trigger survey for specific users |
 
-The **UserPilot Trigger** node listens for webhook events:
+## Usage Examples
 
-- `user.identified` - New user identified
-- `user.updated` - User properties changed
-- `event.tracked` - Custom event tracked
-- `flow.started` - User started flow
-- `flow.completed` - User completed flow
-- `flow.dismissed` - User dismissed flow
-- `nps.submitted` - NPS response received
-- `checklist.completed` - Checklist completed
-- `checklist.item.completed` - Checklist item completed
-- `segment.entered` - User entered segment
-- `segment.exited` - User exited segment
+```javascript
+// Create a new user with custom properties
+{
+  "user_id": "user_12345",
+  "email": "john.doe@company.com",
+  "created_at": "2024-01-15T10:30:00Z",
+  "properties": {
+    "name": "John Doe",
+    "plan": "pro",
+    "company": "Acme Corp",
+    "role": "admin"
+  }
+}
+```
 
-Configure webhooks in your UserPilot dashboard pointing to the webhook URL provided by n8n.
+```javascript
+// Trigger onboarding flow for new user
+{
+  "flow_id": "flow_abc123",
+  "user_id": "user_12345",
+  "trigger_type": "manual",
+  "context": {
+    "feature": "dashboard",
+    "plan_type": "pro"
+  }
+}
+```
 
-## Rate Limits
+```javascript
+// Create user segment for enterprise customers
+{
+  "name": "Enterprise Users",
+  "description": "Users on enterprise plans",
+  "conditions": {
+    "AND": [
+      {"property": "plan", "operator": "equals", "value": "enterprise"},
+      {"property": "created_at", "operator": "greater_than", "value": "30_days_ago"}
+    ]
+  }
+}
+```
 
-- Real-time API: Standard HTTP rate limiting
-- Bulk operations: 1,200 rows per minute
-- File upload: Max 50 MB, 10,000 rows
+```javascript
+// Deploy NPS survey to specific segment
+{
+  "type": "nps",
+  "title": "How likely are you to recommend our product?",
+  "segment_id": "segment_xyz789",
+  "schedule": {
+    "trigger": "time_based",
+    "delay": "7_days"
+  },
+  "settings": {
+    "follow_up_enabled": true,
+    "anonymous": false
+  }
+}
+```
 
-## Resources
+## Error Handling
 
-- [UserPilot Documentation](https://docs.userpilot.com/)
-- [n8n Community Nodes](https://docs.n8n.io/integrations/community-nodes/)
+| Error | Description | Solution |
+|-------|-------------|----------|
+| 401 Unauthorized | Invalid API token or App ID | Verify credentials in UserPilot dashboard |
+| 403 Forbidden | Insufficient permissions for operation | Check API token permissions and plan limits |
+| 404 Not Found | Resource (user, flow, etc.) doesn't exist | Verify resource ID and ensure it exists |
+| 429 Rate Limited | Too many API requests | Implement delays between requests |
+| 422 Validation Error | Invalid data format or missing required fields | Check payload structure and required fields |
+| 500 Server Error | UserPilot service temporarily unavailable | Retry request after delay |
 
-## License
+## Development
 
-This project is licensed under the Business Source License 1.1 (BSL-1.1).
+```bash
+npm install
+npm run build
+npm test
+npm run lint
+npm run dev
+```
 
-**For commercial use, you must obtain a commercial license from Velocity BPA.**
+## Author
+
+**Velocity BPA**
+- Website: [velobpa.com](https://velobpa.com)
+- GitHub: [Velocity-BPA](https://github.com/Velocity-BPA)
+
+## Licensing
+
+This n8n community node is licensed under the **Business Source License 1.1**.
+
+### Free Use
+Permitted for personal, educational, research, and internal business use.
+
+### Commercial Use
+Use of this node within any SaaS, PaaS, hosted platform, managed service, or paid automation offering requires a commercial license.
+
+For licensing inquiries: **licensing@velobpa.com**
 
 See [LICENSE](LICENSE), [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md), and [LICENSING_FAQ.md](LICENSING_FAQ.md) for details.
 
-Contact: licensing@velobpa.com
+## Contributing
+
+Contributions are welcome! Please ensure:
+
+1. Code follows existing style conventions
+2. All tests pass (`npm test`)
+3. Linting passes (`npm run lint`)
+4. Documentation is updated for new features
+5. Commit messages are descriptive
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/Velocity-BPA/n8n-nodes-userpilot/issues)
+- **UserPilot API Documentation**: [UserPilot Developer Docs](https://docs.userpilot.com/api)
+- **UserPilot Community**: [UserPilot Help Center](https://help.userpilot.com)
