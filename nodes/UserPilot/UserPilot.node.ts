@@ -1,39 +1,34 @@
-/*
- * Copyright (c) Velocity BPA, LLC
- * Licensed under the Business Source License 1.1
- * Commercial use requires a separate commercial license.
- * See LICENSE file for details.
+/**
+ * Copyright (c) 2026 Velocity BPA
+ * 
+ * Licensed under the Business Source License 1.1 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     https://github.com/VelocityBPA/n8n-nodes-userpilot/blob/main/LICENSE
+ * 
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import type {
+import {
   IExecuteFunctions,
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
+  NodeOperationError,
+  NodeApiError,
 } from 'n8n-workflow';
-
-import * as user from './actions/user';
-import * as company from './actions/company';
-import * as event from './actions/event';
-import * as flow from './actions/flow';
-import * as nps from './actions/nps';
-import * as checklist from './actions/checklist';
-import * as resourceCenter from './actions/resourceCenter';
-import * as segment from './actions/segment';
-import * as dataExport from './actions/dataExport';
-import * as job from './actions/job';
-import * as spotlight from './actions/spotlight';
-import * as banner from './actions/banner';
 
 export class UserPilot implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'UserPilot',
-    name: 'userPilot',
+    name: 'userpilot',
     icon: 'file:userpilot.svg',
     group: ['transform'],
     version: 1,
     subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-    description: 'Interact with UserPilot API for user onboarding and product growth',
+    description: 'Interact with the UserPilot API',
     defaults: {
       name: 'UserPilot',
     },
@@ -41,1185 +36,2067 @@ export class UserPilot implements INodeType {
     outputs: ['main'],
     credentials: [
       {
-        name: 'userPilotApi',
+        name: 'userpilotApi',
         required: true,
       },
     ],
     properties: [
+      // Resource selector
       {
         displayName: 'Resource',
         name: 'resource',
         type: 'options',
         noDataExpression: true,
         options: [
-          { name: 'Banner', value: 'banner' },
-          { name: 'Checklist', value: 'checklist' },
-          { name: 'Company', value: 'company' },
-          { name: 'Data Export', value: 'dataExport' },
-          { name: 'Event', value: 'event' },
-          { name: 'Flow', value: 'flow' },
-          { name: 'Job', value: 'job' },
-          { name: 'NPS Survey', value: 'nps' },
-          { name: 'Resource Center', value: 'resourceCenter' },
-          { name: 'Segment', value: 'segment' },
-          { name: 'Spotlight', value: 'spotlight' },
-          { name: 'User', value: 'user' },
-        ],
-        default: 'user',
-      },
-
-      // ==================== USER OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['user'] } },
-        options: [
-          { name: 'Bulk Import', value: 'bulkImport', description: 'Bulk import users from CSV file', action: 'Bulk import users' },
-          { name: 'Bulk Update', value: 'bulkUpdate', description: 'Batch update multiple users', action: 'Bulk update users' },
-          { name: 'Delete', value: 'delete', description: 'Delete a user', action: 'Delete a user' },
-          { name: 'Get', value: 'get', description: 'Get user details', action: 'Get a user' },
-          { name: 'Get Events', value: 'getEvents', description: 'Get user event history', action: 'Get user events' },
-          { name: 'Get Flows', value: 'getFlows', description: 'Get user flow interactions', action: 'Get user flows' },
-          { name: 'Identify', value: 'identify', description: 'Identify or create a user', action: 'Identify a user' },
-          { name: 'List', value: 'list', description: 'List all users', action: 'List users' },
-          { name: 'Merge', value: 'merge', description: 'Merge duplicate users', action: 'Merge users' },
-          { name: 'Search', value: 'search', description: 'Search users by property', action: 'Search users' },
-          { name: 'Update', value: 'update', description: 'Update user properties', action: 'Update a user' },
-        ],
-        default: 'identify',
-      },
-
-      // ==================== COMPANY OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['company'] } },
-        options: [
-          { name: 'Bulk Update', value: 'bulkUpdate', description: 'Batch update multiple companies', action: 'Bulk update companies' },
-          { name: 'Delete', value: 'delete', description: 'Delete a company', action: 'Delete a company' },
-          { name: 'Get', value: 'get', description: 'Get company details', action: 'Get a company' },
-          { name: 'Get Analytics', value: 'getAnalytics', description: 'Get company engagement data', action: 'Get company analytics' },
-          { name: 'Get Users', value: 'getUsers', description: 'Get users in company', action: 'Get company users' },
-          { name: 'Identify', value: 'identify', description: 'Identify or create a company', action: 'Identify a company' },
-          { name: 'List', value: 'list', description: 'List all companies', action: 'List companies' },
-          { name: 'Search', value: 'search', description: 'Search companies by property', action: 'Search companies' },
-          { name: 'Update', value: 'update', description: 'Update company properties', action: 'Update a company' },
-        ],
-        default: 'identify',
-      },
-
-      // ==================== EVENT OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['event'] } },
-        options: [
-          { name: 'Bulk Import', value: 'bulkImport', description: 'Bulk import events from CSV', action: 'Bulk import events' },
-          { name: 'Bulk Track', value: 'bulkTrack', description: 'Batch track multiple events', action: 'Bulk track events' },
-          { name: 'Create Definition', value: 'createDefinition', description: 'Define a new event type', action: 'Create event definition' },
-          { name: 'Get Analytics', value: 'getAnalytics', description: 'Get event metrics', action: 'Get event analytics' },
-          { name: 'Get Definition', value: 'getDefinition', description: 'Get event type details', action: 'Get event definition' },
-          { name: 'List Definitions', value: 'listDefinitions', description: 'List all tracked event types', action: 'List event definitions' },
-          { name: 'Track', value: 'track', description: 'Track a custom event', action: 'Track an event' },
-        ],
-        default: 'track',
-      },
-
-      // ==================== FLOW OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['flow'] } },
-        options: [
-          { name: 'Create', value: 'create', description: 'Create a new flow', action: 'Create a flow' },
-          { name: 'Delete', value: 'delete', description: 'Delete a flow', action: 'Delete a flow' },
-          { name: 'Duplicate', value: 'duplicate', description: 'Clone a flow', action: 'Duplicate a flow' },
-          { name: 'Get', value: 'get', description: 'Get flow details', action: 'Get a flow' },
-          { name: 'Get Analytics', value: 'getAnalytics', description: 'Get flow metrics', action: 'Get flow analytics' },
-          { name: 'List', value: 'list', description: 'List all flows', action: 'List flows' },
-          { name: 'Publish', value: 'publish', description: 'Publish a flow', action: 'Publish a flow' },
-          { name: 'Trigger', value: 'trigger', description: 'Trigger a flow for a user', action: 'Trigger a flow' },
-          { name: 'Unpublish', value: 'unpublish', description: 'Unpublish a flow', action: 'Unpublish a flow' },
-          { name: 'Update', value: 'update', description: 'Update flow settings', action: 'Update a flow' },
-        ],
-        default: 'list',
-      },
-
-      // ==================== NPS OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['nps'] } },
-        options: [
-          { name: 'Create', value: 'create', description: 'Create an NPS survey', action: 'Create NPS survey' },
-          { name: 'Delete', value: 'delete', description: 'Delete an NPS survey', action: 'Delete NPS survey' },
-          { name: 'Export Data', value: 'exportData', description: 'Export NPS data', action: 'Export NPS data' },
-          { name: 'Get', value: 'get', description: 'Get NPS survey details', action: 'Get NPS survey' },
-          { name: 'Get Analytics', value: 'getAnalytics', description: 'Get NPS trends', action: 'Get NPS analytics' },
-          { name: 'Get Responses', value: 'getResponses', description: 'Get NPS responses', action: 'Get NPS responses' },
-          { name: 'List', value: 'list', description: 'List all NPS surveys', action: 'List NPS surveys' },
-          { name: 'Publish', value: 'publish', description: 'Publish an NPS survey', action: 'Publish NPS survey' },
-          { name: 'Unpublish', value: 'unpublish', description: 'Unpublish an NPS survey', action: 'Unpublish NPS survey' },
-          { name: 'Update', value: 'update', description: 'Update NPS settings', action: 'Update NPS survey' },
-        ],
-        default: 'list',
-      },
-
-      // ==================== CHECKLIST OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['checklist'] } },
-        options: [
-          { name: 'Create', value: 'create', description: 'Create a checklist', action: 'Create a checklist' },
-          { name: 'Delete', value: 'delete', description: 'Delete a checklist', action: 'Delete a checklist' },
-          { name: 'Get', value: 'get', description: 'Get checklist details', action: 'Get a checklist' },
-          { name: 'Get Analytics', value: 'getAnalytics', description: 'Get completion metrics', action: 'Get checklist analytics' },
-          { name: 'Get User Progress', value: 'getUserProgress', description: 'Get user checklist progress', action: 'Get user progress' },
-          { name: 'List', value: 'list', description: 'List all checklists', action: 'List checklists' },
-          { name: 'Publish', value: 'publish', description: 'Publish a checklist', action: 'Publish a checklist' },
-          { name: 'Unpublish', value: 'unpublish', description: 'Unpublish a checklist', action: 'Unpublish a checklist' },
-          { name: 'Update', value: 'update', description: 'Update a checklist', action: 'Update a checklist' },
-        ],
-        default: 'list',
-      },
-
-      // ==================== RESOURCE CENTER OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['resourceCenter'] } },
-        options: [
-          { name: 'Create Module', value: 'createModule', description: 'Create a module', action: 'Create module' },
-          { name: 'Delete Module', value: 'deleteModule', description: 'Delete a module', action: 'Delete module' },
-          { name: 'Get', value: 'get', description: 'Get resource center config', action: 'Get resource center' },
-          { name: 'Get Module Analytics', value: 'getModuleAnalytics', description: 'Get module engagement', action: 'Get module analytics' },
-          { name: 'List Modules', value: 'listModules', description: 'List modules', action: 'List modules' },
-          { name: 'Reorder Modules', value: 'reorderModules', description: 'Reorder modules', action: 'Reorder modules' },
-          { name: 'Update', value: 'update', description: 'Update resource center', action: 'Update resource center' },
-          { name: 'Update Module', value: 'updateModule', description: 'Update a module', action: 'Update module' },
-        ],
-        default: 'get',
-      },
-
-      // ==================== SEGMENT OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['segment'] } },
-        options: [
-          { name: 'Create', value: 'create', description: 'Create a segment', action: 'Create a segment' },
-          { name: 'Delete', value: 'delete', description: 'Delete a segment', action: 'Delete a segment' },
-          { name: 'Get', value: 'get', description: 'Get segment details', action: 'Get a segment' },
-          { name: 'Get Size', value: 'getSize', description: 'Get segment member count', action: 'Get segment size' },
-          { name: 'Get Users', value: 'getUsers', description: 'Get users in segment', action: 'Get segment users' },
-          { name: 'List', value: 'list', description: 'List all segments', action: 'List segments' },
-          { name: 'Update', value: 'update', description: 'Update a segment', action: 'Update a segment' },
-        ],
-        default: 'list',
-      },
-
-      // ==================== DATA EXPORT OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['dataExport'] } },
-        options: [
-          { name: 'Cancel', value: 'cancel', description: 'Cancel pending export', action: 'Cancel export' },
-          { name: 'Create', value: 'create', description: 'Create an export job', action: 'Create export' },
-          { name: 'Download', value: 'download', description: 'Download export file', action: 'Download export' },
-          { name: 'Get Status', value: 'getStatus', description: 'Check export status', action: 'Get export status' },
-          { name: 'List', value: 'list', description: 'List export jobs', action: 'List exports' },
-        ],
-        default: 'create',
-      },
-
-      // ==================== JOB OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['job'] } },
-        options: [
-          { name: 'Cancel', value: 'cancel', description: 'Cancel pending job', action: 'Cancel job' },
-          { name: 'Get Errors', value: 'getErrors', description: 'Get job error details', action: 'Get job errors' },
-          { name: 'Get Status', value: 'getStatus', description: 'Get job status', action: 'Get job status' },
-          { name: 'List', value: 'list', description: 'List recent jobs', action: 'List jobs' },
-          { name: 'Retry', value: 'retry', description: 'Retry failed job', action: 'Retry job' },
-        ],
-        default: 'list',
-      },
-
-      // ==================== SPOTLIGHT OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['spotlight'] } },
-        options: [
-          { name: 'Create', value: 'create', description: 'Create a spotlight', action: 'Create a spotlight' },
-          { name: 'Delete', value: 'delete', description: 'Delete a spotlight', action: 'Delete a spotlight' },
-          { name: 'Get', value: 'get', description: 'Get spotlight details', action: 'Get a spotlight' },
-          { name: 'Get Analytics', value: 'getAnalytics', description: 'Get spotlight metrics', action: 'Get spotlight analytics' },
-          { name: 'List', value: 'list', description: 'List all spotlights', action: 'List spotlights' },
-          { name: 'Publish', value: 'publish', description: 'Publish a spotlight', action: 'Publish a spotlight' },
-          { name: 'Unpublish', value: 'unpublish', description: 'Unpublish a spotlight', action: 'Unpublish a spotlight' },
-          { name: 'Update', value: 'update', description: 'Update a spotlight', action: 'Update a spotlight' },
-        ],
-        default: 'list',
-      },
-
-      // ==================== BANNER OPERATIONS ====================
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: { show: { resource: ['banner'] } },
-        options: [
-          { name: 'Create', value: 'create', description: 'Create a banner', action: 'Create a banner' },
-          { name: 'Delete', value: 'delete', description: 'Delete a banner', action: 'Delete a banner' },
-          { name: 'Get', value: 'get', description: 'Get banner details', action: 'Get a banner' },
-          { name: 'Get Analytics', value: 'getAnalytics', description: 'Get banner metrics', action: 'Get banner analytics' },
-          { name: 'List', value: 'list', description: 'List all banners', action: 'List banners' },
-          { name: 'Publish', value: 'publish', description: 'Publish a banner', action: 'Publish a banner' },
-          { name: 'Unpublish', value: 'unpublish', description: 'Unpublish a banner', action: 'Unpublish a banner' },
-          { name: 'Update', value: 'update', description: 'Update a banner', action: 'Update a banner' },
-        ],
-        default: 'list',
-      },
-
-      // ==================== USER FIELDS ====================
-      {
-        displayName: 'User ID',
-        name: 'userId',
-        type: 'string',
-        required: true,
-        default: '',
-        description: 'Unique identifier for the user',
-        displayOptions: { show: { resource: ['user'], operation: ['identify', 'update', 'get', 'delete', 'getEvents', 'getFlows'] } },
-      },
-      {
-        displayName: 'Source User ID',
-        name: 'sourceUserId',
-        type: 'string',
-        required: true,
-        default: '',
-        description: 'User ID to merge from',
-        displayOptions: { show: { resource: ['user'], operation: ['merge'] } },
-      },
-      {
-        displayName: 'Target User ID',
-        name: 'targetUserId',
-        type: 'string',
-        required: true,
-        default: '',
-        description: 'User ID to merge into',
-        displayOptions: { show: { resource: ['user'], operation: ['merge'] } },
-      },
-      {
-        displayName: 'Search Property',
-        name: 'searchProperty',
-        type: 'string',
-        required: true,
-        default: '',
-        description: 'Property name to search by',
-        displayOptions: { show: { resource: ['user'], operation: ['search'] } },
-      },
-      {
-        displayName: 'Search Value',
-        name: 'searchValue',
-        type: 'string',
-        required: true,
-        default: '',
-        description: 'Value to search for',
-        displayOptions: { show: { resource: ['user'], operation: ['search'] } },
-      },
-      {
-        displayName: 'Users JSON',
-        name: 'users',
-        type: 'json',
-        required: true,
-        default: '[]',
-        description: 'Array of user objects to update',
-        displayOptions: { show: { resource: ['user'], operation: ['bulkUpdate'] } },
-      },
-      {
-        displayName: 'CSV File',
-        name: 'csvFile',
-        type: 'string',
-        required: true,
-        default: 'data',
-        description: 'Binary property containing CSV file',
-        displayOptions: { show: { resource: ['user'], operation: ['bulkImport'] } },
-      },
-      {
-        displayName: 'Additional Fields',
-        name: 'additionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['user'], operation: ['identify', 'update'] } },
-        options: [
-          { displayName: 'Name', name: 'name', type: 'string', default: '', description: 'User display name' },
-          { displayName: 'Email', name: 'email', type: 'string', default: '', description: 'User email address' },
-          { displayName: 'Created At', name: 'created_at', type: 'dateTime', default: '', description: 'User creation date' },
-          { displayName: 'Company ID', name: 'companyId', type: 'string', default: '', description: 'Associated company ID' },
-        ],
-      },
-      {
-        displayName: 'Custom Properties',
-        name: 'customProperties',
-        type: 'fixedCollection',
-        typeOptions: { multipleValues: true },
-        placeholder: 'Add Property',
-        default: {},
-        displayOptions: { show: { resource: ['user'], operation: ['identify', 'update'] } },
-        options: [
           {
-            displayName: 'Property',
-            name: 'property',
-            values: [
-              { displayName: 'Key', name: 'key', type: 'string', default: '' },
-              { displayName: 'Value', name: 'value', type: 'string', default: '' },
-            ],
+            name: 'Users',
+            value: 'users',
           },
-        ],
-      },
-
-      // ==================== COMPANY FIELDS ====================
-      {
-        displayName: 'Company ID',
-        name: 'companyId',
-        type: 'string',
-        required: true,
-        default: '',
-        description: 'Unique identifier for the company',
-        displayOptions: { show: { resource: ['company'], operation: ['identify', 'update', 'get', 'delete', 'getUsers', 'getAnalytics'] } },
-      },
-      {
-        displayName: 'Company Search Property',
-        name: 'companySearchProperty',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['company'], operation: ['search'] } },
-      },
-      {
-        displayName: 'Company Search Value',
-        name: 'companySearchValue',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['company'], operation: ['search'] } },
-      },
-      {
-        displayName: 'Companies JSON',
-        name: 'companies',
-        type: 'json',
-        required: true,
-        default: '[]',
-        displayOptions: { show: { resource: ['company'], operation: ['bulkUpdate'] } },
-      },
-      {
-        displayName: 'Company Additional Fields',
-        name: 'companyAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['company'], operation: ['identify', 'update'] } },
-        options: [
-          { displayName: 'Name', name: 'name', type: 'string', default: '' },
-          { displayName: 'Created At', name: 'created_at', type: 'dateTime', default: '' },
-        ],
-      },
-      {
-        displayName: 'Company Custom Properties',
-        name: 'companyCustomProperties',
-        type: 'fixedCollection',
-        typeOptions: { multipleValues: true },
-        placeholder: 'Add Property',
-        default: {},
-        displayOptions: { show: { resource: ['company'], operation: ['identify', 'update'] } },
-        options: [
           {
-            displayName: 'Property',
-            name: 'property',
-            values: [
-              { displayName: 'Key', name: 'key', type: 'string', default: '' },
-              { displayName: 'Value', name: 'value', type: 'string', default: '' },
-            ],
+            name: 'unknown',
+            value: 'unknown',
           },
-        ],
-      },
-
-      // ==================== EVENT FIELDS ====================
-      {
-        displayName: 'Event User ID',
-        name: 'eventUserId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['event'], operation: ['track'] } },
-      },
-      {
-        displayName: 'Event Name',
-        name: 'eventName',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['event'], operation: ['track', 'createDefinition', 'getDefinition', 'getAnalytics'] } },
-      },
-      {
-        displayName: 'Events JSON',
-        name: 'events',
-        type: 'json',
-        required: true,
-        default: '[]',
-        displayOptions: { show: { resource: ['event'], operation: ['bulkTrack'] } },
-      },
-      {
-        displayName: 'Events CSV File',
-        name: 'eventsCsvFile',
-        type: 'string',
-        required: true,
-        default: 'data',
-        displayOptions: { show: { resource: ['event'], operation: ['bulkImport'] } },
-      },
-      {
-        displayName: 'Event Additional Fields',
-        name: 'eventAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['event'], operation: ['track'] } },
-        options: [
-          { displayName: 'Timestamp', name: 'timestamp', type: 'dateTime', default: '' },
-          { displayName: 'Session ID', name: 'sessionId', type: 'string', default: '' },
-        ],
-      },
-      {
-        displayName: 'Event Metadata',
-        name: 'eventMetadata',
-        type: 'fixedCollection',
-        typeOptions: { multipleValues: true },
-        placeholder: 'Add Metadata',
-        default: {},
-        displayOptions: { show: { resource: ['event'], operation: ['track'] } },
-        options: [
           {
-            displayName: 'Property',
-            name: 'property',
-            values: [
-              { displayName: 'Key', name: 'key', type: 'string', default: '' },
-              { displayName: 'Value', name: 'value', type: 'string', default: '' },
-            ],
+            name: 'Flows',
+            value: 'flows',
           },
+          {
+            name: 'Checklists',
+            value: 'checklists',
+          },
+          {
+            name: 'Segments',
+            value: 'segments',
+          },
+          {
+            name: 'Surveys',
+            value: 'surveys',
+          }
         ],
-      },
-      {
-        displayName: 'Event Definition Description',
-        name: 'eventDefinitionDescription',
-        type: 'string',
-        default: '',
-        displayOptions: { show: { resource: ['event'], operation: ['createDefinition'] } },
-      },
-
-      // ==================== FLOW FIELDS ====================
-      {
-        displayName: 'Flow ID',
-        name: 'flowId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['flow'], operation: ['get', 'update', 'delete', 'trigger', 'publish', 'unpublish', 'getAnalytics', 'duplicate'] } },
-      },
-      {
-        displayName: 'Flow User ID',
-        name: 'flowUserId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['flow'], operation: ['trigger'] } },
-      },
-      {
-        displayName: 'Flow Name',
-        name: 'flowName',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['flow'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Flow Additional Fields',
-        name: 'flowAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['flow'], operation: ['create', 'update'] } },
-        options: [
-          { displayName: 'Target URL', name: 'targetUrl', type: 'string', default: '' },
-          { displayName: 'Name', name: 'name', type: 'string', default: '' },
-        ],
-      },
-      {
-        displayName: 'Flow Targeting',
-        name: 'flowTargeting',
-        type: 'json',
-        default: '{}',
-        displayOptions: { show: { resource: ['flow'], operation: ['create', 'update'] } },
-      },
-
-      // ==================== NPS FIELDS ====================
-      {
-        displayName: 'NPS Survey ID',
-        name: 'surveyId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['nps'], operation: ['get', 'update', 'delete', 'getResponses', 'publish', 'unpublish', 'getAnalytics', 'exportData'] } },
-      },
-      {
-        displayName: 'NPS Survey Name',
-        name: 'npsName',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['nps'], operation: ['create'] } },
-      },
-      {
-        displayName: 'NPS Additional Fields',
-        name: 'npsAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['nps'], operation: ['create', 'update'] } },
-        options: [
-          { displayName: 'Question', name: 'question', type: 'string', default: '' },
-          { displayName: 'Follow-Up Enabled', name: 'followUpEnabled', type: 'boolean', default: false },
-          { displayName: 'Name', name: 'name', type: 'string', default: '' },
-        ],
-      },
-      {
-        displayName: 'NPS Targeting',
-        name: 'npsTargeting',
-        type: 'json',
-        default: '{}',
-        displayOptions: { show: { resource: ['nps'], operation: ['create', 'update'] } },
-      },
-
-      // ==================== CHECKLIST FIELDS ====================
-      {
-        displayName: 'Checklist ID',
-        name: 'checklistId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['checklist'], operation: ['get', 'update', 'delete', 'publish', 'unpublish', 'getAnalytics'] } },
-      },
-      {
-        displayName: 'Checklist User ID',
-        name: 'checklistUserId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['checklist'], operation: ['getUserProgress'] } },
-      },
-      {
-        displayName: 'Checklist Name',
-        name: 'checklistName',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['checklist'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Checklist Items',
-        name: 'checklistItems',
-        type: 'json',
-        required: true,
-        default: '[]',
-        displayOptions: { show: { resource: ['checklist'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Checklist Additional Fields',
-        name: 'checklistAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['checklist'], operation: ['create', 'update'] } },
-        options: [
-          { displayName: 'Name', name: 'name', type: 'string', default: '' },
-          { displayName: 'Items', name: 'items', type: 'json', default: '[]' },
-        ],
-      },
-      {
-        displayName: 'Checklist Targeting',
-        name: 'checklistTargeting',
-        type: 'json',
-        default: '{}',
-        displayOptions: { show: { resource: ['checklist'], operation: ['create', 'update'] } },
-      },
-
-      // ==================== RESOURCE CENTER FIELDS ====================
-      {
-        displayName: 'Module ID',
-        name: 'moduleId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['resourceCenter'], operation: ['updateModule', 'deleteModule', 'getModuleAnalytics'] } },
-      },
-      {
-        displayName: 'Module Name',
-        name: 'moduleName',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['resourceCenter'], operation: ['createModule'] } },
-      },
-      {
-        displayName: 'Module Type',
-        name: 'moduleType',
-        type: 'options',
-        required: true,
-        default: 'article',
-        options: [
-          { name: 'Article', value: 'article' },
-          { name: 'Video', value: 'video' },
-          { name: 'Link', value: 'link' },
-          { name: 'Checklist', value: 'checklist' },
-        ],
-        displayOptions: { show: { resource: ['resourceCenter'], operation: ['createModule'] } },
-      },
-      {
-        displayName: 'Module Content',
-        name: 'moduleContent',
-        type: 'json',
-        required: true,
-        default: '{}',
-        displayOptions: { show: { resource: ['resourceCenter'], operation: ['createModule'] } },
-      },
-      {
-        displayName: 'Module Order',
-        name: 'moduleOrder',
-        type: 'json',
-        required: true,
-        default: '[]',
-        displayOptions: { show: { resource: ['resourceCenter'], operation: ['reorderModules'] } },
-      },
-      {
-        displayName: 'Resource Center Settings',
-        name: 'resourceCenterSettings',
-        type: 'json',
-        default: '{}',
-        displayOptions: { show: { resource: ['resourceCenter'], operation: ['update'] } },
-      },
-      {
-        displayName: 'Module Update Fields',
-        name: 'moduleUpdateFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['resourceCenter'], operation: ['updateModule'] } },
-        options: [
-          { displayName: 'Name', name: 'name', type: 'string', default: '' },
-          { displayName: 'Content', name: 'content', type: 'json', default: '{}' },
-          { displayName: 'Order', name: 'order', type: 'number', default: 0 },
-        ],
-      },
-
-      // ==================== SEGMENT FIELDS ====================
-      {
-        displayName: 'Segment ID',
-        name: 'segmentId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['segment'], operation: ['get', 'update', 'delete', 'getUsers', 'getSize'] } },
-      },
-      {
-        displayName: 'Segment Name',
-        name: 'segmentName',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['segment'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Segment Conditions',
-        name: 'segmentConditions',
-        type: 'json',
-        required: true,
-        default: '[]',
-        displayOptions: { show: { resource: ['segment'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Segment Additional Fields',
-        name: 'segmentAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['segment'], operation: ['create', 'update'] } },
-        options: [
-          { displayName: 'Type', name: 'type', type: 'options', default: 'user', options: [{ name: 'User', value: 'user' }, { name: 'Company', value: 'company' }] },
-          { displayName: 'Name', name: 'name', type: 'string', default: '' },
-          { displayName: 'Conditions', name: 'conditions', type: 'json', default: '[]' },
-        ],
-      },
-
-      // ==================== DATA EXPORT FIELDS ====================
-      {
-        displayName: 'Export ID',
-        name: 'exportId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['dataExport'], operation: ['getStatus', 'download', 'cancel'] } },
-      },
-      {
-        displayName: 'Export Type',
-        name: 'exportType',
-        type: 'options',
-        required: true,
         default: 'users',
-        options: [
-          { name: 'Users', value: 'users' },
-          { name: 'Events', value: 'events' },
-          { name: 'Companies', value: 'companies' },
-        ],
-        displayOptions: { show: { resource: ['dataExport'], operation: ['create'] } },
       },
-      {
-        displayName: 'Export Additional Fields',
-        name: 'exportAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['dataExport'], operation: ['create'] } },
-        options: [
-          { displayName: 'Date From', name: 'dateFrom', type: 'dateTime', default: '' },
-          { displayName: 'Date To', name: 'dateTo', type: 'dateTime', default: '' },
-          { displayName: 'Format', name: 'format', type: 'options', default: 'csv', options: [{ name: 'CSV', value: 'csv' }, { name: 'JSON', value: 'json' }] },
-        ],
-      },
-      {
-        displayName: 'Export Filters',
-        name: 'exportFilters',
-        type: 'json',
-        default: '{}',
-        displayOptions: { show: { resource: ['dataExport'], operation: ['create'] } },
-      },
-
-      // ==================== JOB FIELDS ====================
-      {
-        displayName: 'Job ID',
-        name: 'jobId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['job'], operation: ['getStatus', 'cancel', 'retry', 'getErrors'] } },
-      },
-      {
-        displayName: 'Job Type Filter',
-        name: 'jobTypeFilter',
-        type: 'options',
-        default: '',
-        options: [
-          { name: 'All', value: '' },
-          { name: 'Bulk Import', value: 'bulk_import' },
-          { name: 'Bulk Update', value: 'bulk_update' },
-          { name: 'Export', value: 'export' },
-        ],
-        displayOptions: { show: { resource: ['job'], operation: ['list'] } },
-      },
-
-      // ==================== SPOTLIGHT FIELDS ====================
-      {
-        displayName: 'Spotlight ID',
-        name: 'spotlightId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['spotlight'], operation: ['get', 'update', 'delete', 'publish', 'unpublish', 'getAnalytics'] } },
-      },
-      {
-        displayName: 'Spotlight Name',
-        name: 'spotlightName',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['spotlight'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Spotlight Selector',
-        name: 'spotlightSelector',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['spotlight'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Spotlight Content',
-        name: 'spotlightContent',
-        type: 'json',
-        required: true,
-        default: '{}',
-        displayOptions: { show: { resource: ['spotlight'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Spotlight Additional Fields',
-        name: 'spotlightAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['spotlight'], operation: ['create', 'update'] } },
-        options: [
-          { displayName: 'Name', name: 'name', type: 'string', default: '' },
-          { displayName: 'Selector', name: 'selector', type: 'string', default: '' },
-          { displayName: 'Content', name: 'content', type: 'json', default: '{}' },
-        ],
-      },
-      {
-        displayName: 'Spotlight Targeting',
-        name: 'spotlightTargeting',
-        type: 'json',
-        default: '{}',
-        displayOptions: { show: { resource: ['spotlight'], operation: ['create', 'update'] } },
-      },
-
-      // ==================== BANNER FIELDS ====================
-      {
-        displayName: 'Banner ID',
-        name: 'bannerId',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['banner'], operation: ['get', 'update', 'delete', 'publish', 'unpublish', 'getAnalytics'] } },
-      },
-      {
-        displayName: 'Banner Name',
-        name: 'bannerName',
-        type: 'string',
-        required: true,
-        default: '',
-        displayOptions: { show: { resource: ['banner'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Banner Content',
-        name: 'bannerContent',
-        type: 'json',
-        required: true,
-        default: '{}',
-        displayOptions: { show: { resource: ['banner'], operation: ['create'] } },
-      },
-      {
-        displayName: 'Banner Additional Fields',
-        name: 'bannerAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: { show: { resource: ['banner'], operation: ['create', 'update'] } },
-        options: [
-          { displayName: 'Name', name: 'name', type: 'string', default: '' },
-          { displayName: 'Position', name: 'position', type: 'options', default: 'top', options: [{ name: 'Top', value: 'top' }, { name: 'Bottom', value: 'bottom' }] },
-          { displayName: 'Content', name: 'content', type: 'json', default: '{}' },
-        ],
-      },
-      {
-        displayName: 'Banner Targeting',
-        name: 'bannerTargeting',
-        type: 'json',
-        default: '{}',
-        displayOptions: { show: { resource: ['banner'], operation: ['create', 'update'] } },
-      },
-
-      // ==================== PAGINATION OPTIONS ====================
-      {
-        displayName: 'Return All',
-        name: 'returnAll',
-        type: 'boolean',
-        default: false,
-        description: 'Whether to return all results or only up to a given limit',
-        displayOptions: {
-          show: {
-            resource: ['user', 'company', 'event', 'flow', 'nps', 'checklist', 'segment', 'dataExport', 'job', 'spotlight', 'banner', 'resourceCenter'],
-            operation: ['list', 'search', 'getResponses', 'getUsers', 'listModules', 'listDefinitions'],
-          },
+      // Operation dropdowns per resource
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+    },
+  },
+  options: [
+    {
+      name: 'Create User',
+      value: 'createUser',
+      description: 'Create or update a user profile',
+      action: 'Create user',
+    },
+    {
+      name: 'Get User',
+      value: 'getUser',
+      description: 'Retrieve a specific user profile',
+      action: 'Get user',
+    },
+    {
+      name: 'Get All Users',
+      value: 'getAllUsers',
+      description: 'List all users with pagination',
+      action: 'Get all users',
+    },
+    {
+      name: 'Update User',
+      value: 'updateUser',
+      description: 'Update user properties and attributes',
+      action: 'Update user',
+    },
+    {
+      name: 'Delete User',
+      value: 'deleteUser',
+      description: 'Remove a user profile',
+      action: 'Delete user',
+    },
+  ],
+  default: 'createUser',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+    },
+  },
+  options: [
+    {
+      name: 'Get All Flows',
+      value: 'getAllFlows',
+      description: 'List all flows and their status',
+      action: 'Get all flows',
+    },
+    {
+      name: 'Get Flow',
+      value: 'getFlow',
+      description: 'Get specific flow details and configuration',
+      action: 'Get a flow',
+    },
+    {
+      name: 'Trigger Flow',
+      value: 'triggerFlow',
+      description: 'Manually trigger a flow for a user',
+      action: 'Trigger a flow',
+    },
+    {
+      name: 'Get Flow Analytics',
+      value: 'getFlowAnalytics',
+      description: 'Get flow performance metrics',
+      action: 'Get flow analytics',
+    },
+    {
+      name: 'Update Flow Status',
+      value: 'updateFlowStatus',
+      description: 'Enable or disable a flow',
+      action: 'Update flow status',
+    },
+  ],
+  default: 'getAllFlows',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+    },
+  },
+  options: [
+    {
+      name: 'Get All Checklists',
+      value: 'getAllChecklists',
+      description: 'List all checklists and their configuration',
+      action: 'Get all checklists',
+    },
+    {
+      name: 'Get Checklist',
+      value: 'getChecklist',
+      description: 'Get specific checklist details',
+      action: 'Get a checklist',
+    },
+    {
+      name: 'Complete Checklist Item',
+      value: 'completeChecklistItem',
+      description: 'Mark checklist item as complete for user',
+      action: 'Complete checklist item',
+    },
+    {
+      name: 'Get Checklist Progress',
+      value: 'getChecklistProgress',
+      description: 'Get user progress on checklist',
+      action: 'Get checklist progress',
+    },
+    {
+      name: 'Update Checklist Status',
+      value: 'updateChecklistStatus',
+      description: 'Enable or disable checklist',
+      action: 'Update checklist status',
+    },
+  ],
+  default: 'getAllChecklists',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: {
+    show: {
+      resource: ['segments'],
+    },
+  },
+  options: [
+    {
+      name: 'Get All Segments',
+      value: 'getAllSegments',
+      description: 'List all user segments',
+      action: 'Get all segments',
+    },
+    {
+      name: 'Get Segment',
+      value: 'getSegment',
+      description: 'Get specific segment configuration and criteria',
+      action: 'Get a segment',
+    },
+    {
+      name: 'Create Segment',
+      value: 'createSegment',
+      description: 'Create a new user segment',
+      action: 'Create a segment',
+    },
+    {
+      name: 'Update Segment',
+      value: 'updateSegment',
+      description: 'Update segment criteria and configuration',
+      action: 'Update a segment',
+    },
+    {
+      name: 'Get Segment Users',
+      value: 'getSegmentUsers',
+      description: 'List users belonging to a segment',
+      action: 'Get segment users',
+    },
+  ],
+  default: 'getAllSegments',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+    },
+  },
+  options: [
+    {
+      name: 'Get All Surveys',
+      value: 'getAllSurveys',
+      description: 'List all surveys including NPS surveys',
+      action: 'Get all surveys',
+    },
+    {
+      name: 'Get Survey',
+      value: 'getSurvey',
+      description: 'Get specific survey configuration',
+      action: 'Get a survey',
+    },
+    {
+      name: 'Create Survey Response',
+      value: 'createSurveyResponse',
+      description: 'Submit a survey response',
+      action: 'Create survey response',
+    },
+    {
+      name: 'Get Survey Responses',
+      value: 'getSurveyResponses',
+      description: 'Get all responses for a survey',
+      action: 'Get survey responses',
+    },
+    {
+      name: 'Get Survey Analytics',
+      value: 'getSurveyAnalytics',
+      description: 'Get survey analytics including NPS scores',
+      action: 'Get survey analytics',
+    },
+    {
+      name: 'Update Survey Status',
+      value: 'updateSurveyStatus',
+      description: 'Enable or disable survey',
+      action: 'Update survey status',
+    },
+  ],
+  default: 'getAllSurveys',
+},
+      // Parameter definitions
+{
+  displayName: 'User ID',
+  name: 'userId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['createUser'],
+    },
+  },
+  default: '',
+  description: 'The unique identifier for the user',
+},
+{
+  displayName: 'Email',
+  name: 'email',
+  type: 'string',
+  required: false,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['createUser'],
+    },
+  },
+  default: '',
+  description: 'The user email address',
+},
+{
+  displayName: 'Properties',
+  name: 'properties',
+  type: 'json',
+  required: false,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['createUser'],
+    },
+  },
+  default: '{}',
+  description: 'Custom properties for the user profile',
+},
+{
+  displayName: 'User ID',
+  name: 'userId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['getUser'],
+    },
+  },
+  default: '',
+  description: 'The unique identifier for the user to retrieve',
+},
+{
+  displayName: 'Page',
+  name: 'page',
+  type: 'number',
+  required: false,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['getAllUsers'],
+    },
+  },
+  default: 1,
+  description: 'Page number for pagination',
+},
+{
+  displayName: 'Limit',
+  name: 'limit',
+  type: 'number',
+  required: false,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['getAllUsers'],
+    },
+  },
+  default: 50,
+  description: 'Number of users per page',
+},
+{
+  displayName: 'Filters',
+  name: 'filters',
+  type: 'json',
+  required: false,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['getAllUsers'],
+    },
+  },
+  default: '{}',
+  description: 'Filter criteria for user search',
+},
+{
+  displayName: 'User ID',
+  name: 'userId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['updateUser'],
+    },
+  },
+  default: '',
+  description: 'The unique identifier for the user to update',
+},
+{
+  displayName: 'Properties',
+  name: 'properties',
+  type: 'json',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['updateUser'],
+    },
+  },
+  default: '{}',
+  description: 'Properties to update for the user',
+},
+{
+  displayName: 'User ID',
+  name: 'userId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['users'],
+      operation: ['deleteUser'],
+    },
+  },
+  default: '',
+  description: 'The unique identifier for the user to delete',
+},
+{
+  displayName: 'Status',
+  name: 'status',
+  type: 'options',
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['getAllFlows'],
+    },
+  },
+  options: [
+    {
+      name: 'All',
+      value: '',
+    },
+    {
+      name: 'Active',
+      value: 'active',
+    },
+    {
+      name: 'Inactive',
+      value: 'inactive',
+    },
+    {
+      name: 'Draft',
+      value: 'draft',
+    },
+  ],
+  default: '',
+  description: 'Filter flows by status',
+},
+{
+  displayName: 'Type',
+  name: 'type',
+  type: 'options',
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['getAllFlows'],
+    },
+  },
+  options: [
+    {
+      name: 'All',
+      value: '',
+    },
+    {
+      name: 'Onboarding',
+      value: 'onboarding',
+    },
+    {
+      name: 'Feature Adoption',
+      value: 'feature_adoption',
+    },
+    {
+      name: 'Product Tour',
+      value: 'product_tour',
+    },
+  ],
+  default: '',
+  description: 'Filter flows by type',
+},
+{
+  displayName: 'Flow ID',
+  name: 'flowId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['getFlow'],
+    },
+  },
+  default: '',
+  description: 'The ID of the flow to retrieve',
+},
+{
+  displayName: 'Flow ID',
+  name: 'flowId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['triggerFlow'],
+    },
+  },
+  default: '',
+  description: 'The ID of the flow to trigger',
+},
+{
+  displayName: 'User ID',
+  name: 'userId',
+  type: 'string',
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['triggerFlow'],
+    },
+  },
+  default: '',
+  description: 'The ID of the user to trigger the flow for (required if email not provided)',
+},
+{
+  displayName: 'User Email',
+  name: 'userEmail',
+  type: 'string',
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['triggerFlow'],
+    },
+  },
+  default: '',
+  description: 'The email of the user to trigger the flow for (required if user ID not provided)',
+},
+{
+  displayName: 'Flow ID',
+  name: 'flowId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['getFlowAnalytics'],
+    },
+  },
+  default: '',
+  description: 'The ID of the flow to get analytics for',
+},
+{
+  displayName: 'Date Range',
+  name: 'dateRange',
+  type: 'options',
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['getFlowAnalytics'],
+    },
+  },
+  options: [
+    {
+      name: 'Last 7 Days',
+      value: '7d',
+    },
+    {
+      name: 'Last 30 Days',
+      value: '30d',
+    },
+    {
+      name: 'Last 90 Days',
+      value: '90d',
+    },
+    {
+      name: 'Last Year',
+      value: '1y',
+    },
+  ],
+  default: '30d',
+  description: 'Date range for analytics data',
+},
+{
+  displayName: 'Flow ID',
+  name: 'flowId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['updateFlowStatus'],
+    },
+  },
+  default: '',
+  description: 'The ID of the flow to update',
+},
+{
+  displayName: 'Status',
+  name: 'newStatus',
+  type: 'options',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['flows'],
+      operation: ['updateFlowStatus'],
+    },
+  },
+  options: [
+    {
+      name: 'Active',
+      value: 'active',
+    },
+    {
+      name: 'Inactive',
+      value: 'inactive',
+    },
+  ],
+  default: 'active',
+  description: 'The new status for the flow',
+},
+{
+  displayName: 'Status',
+  name: 'status',
+  type: 'options',
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['getAllChecklists'],
+    },
+  },
+  options: [
+    {
+      name: 'All',
+      value: '',
+    },
+    {
+      name: 'Active',
+      value: 'active',
+    },
+    {
+      name: 'Inactive',
+      value: 'inactive',
+    },
+  ],
+  default: '',
+  description: 'Filter checklists by status',
+},
+{
+  displayName: 'Checklist ID',
+  name: 'checklistId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['getChecklist'],
+    },
+  },
+  default: '',
+  description: 'The ID of the checklist to retrieve',
+},
+{
+  displayName: 'Checklist ID',
+  name: 'checklistId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['completeChecklistItem'],
+    },
+  },
+  default: '',
+  description: 'The ID of the checklist containing the item',
+},
+{
+  displayName: 'Item ID',
+  name: 'itemId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['completeChecklistItem'],
+    },
+  },
+  default: '',
+  description: 'The ID of the checklist item to complete',
+},
+{
+  displayName: 'User Identification',
+  name: 'userIdentification',
+  type: 'options',
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['completeChecklistItem'],
+    },
+  },
+  options: [
+    {
+      name: 'User ID',
+      value: 'userId',
+    },
+    {
+      name: 'Email',
+      value: 'email',
+    },
+  ],
+  default: 'userId',
+  description: 'How to identify the user',
+},
+{
+  displayName: 'User ID',
+  name: 'userId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['completeChecklistItem'],
+      userIdentification: ['userId'],
+    },
+  },
+  default: '',
+  description: 'The ID of the user completing the item',
+},
+{
+  displayName: 'Email',
+  name: 'email',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['completeChecklistItem'],
+      userIdentification: ['email'],
+    },
+  },
+  default: '',
+  description: 'The email of the user completing the item',
+},
+{
+  displayName: 'Checklist ID',
+  name: 'checklistId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['getChecklistProgress'],
+    },
+  },
+  default: '',
+  description: 'The ID of the checklist to get progress for',
+},
+{
+  displayName: 'User Identification',
+  name: 'userIdentification',
+  type: 'options',
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['getChecklistProgress'],
+    },
+  },
+  options: [
+    {
+      name: 'User ID',
+      value: 'userId',
+    },
+    {
+      name: 'Email',
+      value: 'email',
+    },
+  ],
+  default: 'userId',
+  description: 'How to identify the user',
+},
+{
+  displayName: 'User ID',
+  name: 'userId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['getChecklistProgress'],
+      userIdentification: ['userId'],
+    },
+  },
+  default: '',
+  description: 'The ID of the user to get progress for',
+},
+{
+  displayName: 'Email',
+  name: 'email',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['getChecklistProgress'],
+      userIdentification: ['email'],
+    },
+  },
+  default: '',
+  description: 'The email of the user to get progress for',
+},
+{
+  displayName: 'Checklist ID',
+  name: 'checklistId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['updateChecklistStatus'],
+    },
+  },
+  default: '',
+  description: 'The ID of the checklist to update',
+},
+{
+  displayName: 'Status',
+  name: 'status',
+  type: 'options',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['checklists'],
+      operation: ['updateChecklistStatus'],
+    },
+  },
+  options: [
+    {
+      name: 'Active',
+      value: 'active',
+    },
+    {
+      name: 'Inactive',
+      value: 'inactive',
+    },
+  ],
+  default: 'active',
+  description: 'The new status for the checklist',
+},
+{
+  displayName: 'Segment ID',
+  name: 'segmentId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['segments'],
+      operation: ['getSegment'],
+    },
+  },
+  default: '',
+  description: 'The ID of the segment to retrieve',
+},
+{
+  displayName: 'Name',
+  name: 'name',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['segments'],
+      operation: ['createSegment'],
+    },
+  },
+  default: '',
+  description: 'The name of the segment',
+},
+{
+  displayName: 'Criteria',
+  name: 'criteria',
+  type: 'json',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['segments'],
+      operation: ['createSegment', 'updateSegment'],
+    },
+  },
+  default: '{}',
+  description: 'The criteria for the segment in JSON format',
+},
+{
+  displayName: 'Description',
+  name: 'description',
+  type: 'string',
+  required: false,
+  displayOptions: {
+    show: {
+      resource: ['segments'],
+      operation: ['createSegment'],
+    },
+  },
+  default: '',
+  description: 'The description of the segment',
+},
+{
+  displayName: 'Segment ID',
+  name: 'segmentId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['segments'],
+      operation: ['updateSegment'],
+    },
+  },
+  default: '',
+  description: 'The ID of the segment to update',
+},
+{
+  displayName: 'Segment ID',
+  name: 'segmentId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['segments'],
+      operation: ['getSegmentUsers'],
+    },
+  },
+  default: '',
+  description: 'The ID of the segment to get users for',
+},
+{
+  displayName: 'Page',
+  name: 'page',
+  type: 'number',
+  required: false,
+  displayOptions: {
+    show: {
+      resource: ['segments'],
+      operation: ['getSegmentUsers'],
+    },
+  },
+  default: 1,
+  description: 'Page number for pagination',
+},
+{
+  displayName: 'Limit',
+  name: 'limit',
+  type: 'number',
+  required: false,
+  displayOptions: {
+    show: {
+      resource: ['segments'],
+      operation: ['getSegmentUsers'],
+    },
+  },
+  default: 50,
+  description: 'Number of users to return per page',
+},
+{
+  displayName: 'Survey Type',
+  name: 'type',
+  type: 'options',
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['getAllSurveys'],
+    },
+  },
+  options: [
+    {
+      name: 'All',
+      value: '',
+    },
+    {
+      name: 'NPS',
+      value: 'nps',
+    },
+    {
+      name: 'CSAT',
+      value: 'csat',
+    },
+    {
+      name: 'Custom',
+      value: 'custom',
+    },
+  ],
+  default: '',
+  description: 'Filter surveys by type',
+},
+{
+  displayName: 'Status',
+  name: 'status',
+  type: 'options',
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['getAllSurveys'],
+    },
+  },
+  options: [
+    {
+      name: 'All',
+      value: '',
+    },
+    {
+      name: 'Active',
+      value: 'active',
+    },
+    {
+      name: 'Inactive',
+      value: 'inactive',
+    },
+    {
+      name: 'Draft',
+      value: 'draft',
+    },
+  ],
+  default: '',
+  description: 'Filter surveys by status',
+},
+{
+  displayName: 'Survey ID',
+  name: 'surveyId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['getSurvey'],
+    },
+  },
+  default: '',
+  description: 'The ID of the survey to retrieve',
+},
+{
+  displayName: 'Survey ID',
+  name: 'surveyId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['createSurveyResponse'],
+    },
+  },
+  default: '',
+  description: 'The ID of the survey to respond to',
+},
+{
+  displayName: 'User ID',
+  name: 'userId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['createSurveyResponse'],
+    },
+  },
+  default: '',
+  description: 'The ID of the user submitting the response',
+},
+{
+  displayName: 'Answers',
+  name: 'answers',
+  type: 'json',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['createSurveyResponse'],
+    },
+  },
+  default: '{}',
+  description: 'The survey answers in JSON format',
+},
+{
+  displayName: 'Survey ID',
+  name: 'surveyId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['getSurveyResponses'],
+    },
+  },
+  default: '',
+  description: 'The ID of the survey to get responses for',
+},
+{
+  displayName: 'Date Range',
+  name: 'dateRange',
+  type: 'fixedCollection',
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['getSurveyResponses'],
+    },
+  },
+  default: {},
+  placeholder: 'Add Date Range',
+  typeOptions: {
+    multipleValues: false,
+  },
+  options: [
+    {
+      name: 'range',
+      displayName: 'Date Range',
+      values: [
+        {
+          displayName: 'Start Date',
+          name: 'startDate',
+          type: 'dateTime',
+          default: '',
+          description: 'Start date for filtering responses',
         },
-      },
-      {
-        displayName: 'Limit',
-        name: 'limit',
-        type: 'number',
-        default: 50,
-        description: 'Max number of results to return',
-        typeOptions: { minValue: 1, maxValue: 100 },
-        displayOptions: {
-          show: {
-            resource: ['user', 'company', 'event', 'flow', 'nps', 'checklist', 'segment', 'dataExport', 'job', 'spotlight', 'banner', 'resourceCenter'],
-            operation: ['list', 'search', 'getResponses', 'getUsers', 'listModules', 'listDefinitions'],
-            returnAll: [false],
-          },
+        {
+          displayName: 'End Date',
+          name: 'endDate',
+          type: 'dateTime',
+          default: '',
+          description: 'End date for filtering responses',
         },
-      },
+      ],
+    },
+  ],
+  description: 'Date range for filtering responses',
+},
+{
+  displayName: 'Survey ID',
+  name: 'surveyId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['getSurveyAnalytics'],
+    },
+  },
+  default: '',
+  description: 'The ID of the survey to get analytics for',
+},
+{
+  displayName: 'Date Range',
+  name: 'dateRange',
+  type: 'fixedCollection',
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['getSurveyAnalytics'],
+    },
+  },
+  default: {},
+  placeholder: 'Add Date Range',
+  typeOptions: {
+    multipleValues: false,
+  },
+  options: [
+    {
+      name: 'range',
+      displayName: 'Date Range',
+      values: [
+        {
+          displayName: 'Start Date',
+          name: 'startDate',
+          type: 'dateTime',
+          default: '',
+          description: 'Start date for analytics data',
+        },
+        {
+          displayName: 'End Date',
+          name: 'endDate',
+          type: 'dateTime',
+          default: '',
+          description: 'End date for analytics data',
+        },
+      ],
+    },
+  ],
+  description: 'Date range for analytics data',
+},
+{
+  displayName: 'Survey ID',
+  name: 'surveyId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['updateSurveyStatus'],
+    },
+  },
+  default: '',
+  description: 'The ID of the survey to update',
+},
+{
+  displayName: 'Status',
+  name: 'status',
+  type: 'options',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['surveys'],
+      operation: ['updateSurveyStatus'],
+    },
+  },
+  options: [
+    {
+      name: 'Active',
+      value: 'active',
+    },
+    {
+      name: 'Inactive',
+      value: 'inactive',
+    },
+  ],
+  default: 'active',
+  description: 'The new status for the survey',
+},
     ],
   };
 
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const items = this.getInputData();
-    const returnData: INodeExecutionData[] = [];
     const resource = this.getNodeParameter('resource', 0) as string;
-    const operation = this.getNodeParameter('operation', 0) as string;
 
-    for (let i = 0; i < items.length; i++) {
-      try {
-        let responseData: any;
+    switch (resource) {
+      case 'users':
+        return [await executeUsersOperations.call(this, items)];
+      case 'unknown':
+        return [await executeunknownOperations.call(this, items)];
+      case 'flows':
+        return [await executeFlowsOperations.call(this, items)];
+      case 'checklists':
+        return [await executeChecklistsOperations.call(this, items)];
+      case 'segments':
+        return [await executeSegmentsOperations.call(this, items)];
+      case 'surveys':
+        return [await executeSurveysOperations.call(this, items)];
+      default:
+        throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not supported`);
+    }
+  }
+}
 
-        switch (resource) {
-          case 'user':
-            responseData = await handleUserOperations.call(this, operation, i);
-            break;
-          case 'company':
-            responseData = await handleCompanyOperations.call(this, operation, i);
-            break;
-          case 'event':
-            responseData = await handleEventOperations.call(this, operation, i);
-            break;
-          case 'flow':
-            responseData = await handleFlowOperations.call(this, operation, i);
-            break;
-          case 'nps':
-            responseData = await handleNpsOperations.call(this, operation, i);
-            break;
-          case 'checklist':
-            responseData = await handleChecklistOperations.call(this, operation, i);
-            break;
-          case 'resourceCenter':
-            responseData = await handleResourceCenterOperations.call(this, operation, i);
-            break;
-          case 'segment':
-            responseData = await handleSegmentOperations.call(this, operation, i);
-            break;
-          case 'dataExport':
-            responseData = await handleDataExportOperations.call(this, operation, i);
-            break;
-          case 'job':
-            responseData = await handleJobOperations.call(this, operation, i);
-            break;
-          case 'spotlight':
-            responseData = await handleSpotlightOperations.call(this, operation, i);
-            break;
-          case 'banner':
-            responseData = await handleBannerOperations.call(this, operation, i);
-            break;
-          default:
-            throw new Error(`Unknown resource: ${resource}`);
+// ============================================================
+// Resource Handler Functions
+// ============================================================
+
+async function executeUsersOperations(
+  this: IExecuteFunctions,
+  items: INodeExecutionData[],
+): Promise<INodeExecutionData[]> {
+  const returnData: INodeExecutionData[] = [];
+  const operation = this.getNodeParameter('operation', 0) as string;
+  const credentials = await this.getCredentials('userpilotApi') as any;
+
+  for (let i = 0; i < items.length; i++) {
+    try {
+      let result: any;
+
+      switch (operation) {
+        case 'createUser': {
+          const userId = this.getNodeParameter('userId', i) as string;
+          const email = this.getNodeParameter('email', i) as string;
+          const propertiesParam = this.getNodeParameter('properties', i) as string;
+          
+          let properties: any = {};
+          if (propertiesParam) {
+            try {
+              properties = typeof propertiesParam === 'string' ? JSON.parse(propertiesParam) : propertiesParam;
+            } catch (error: any) {
+              throw new NodeOperationError(this.getNode(), `Invalid JSON in properties: ${error.message}`);
+            }
+          }
+
+          const body: any = {
+            user_id: userId,
+            properties: properties,
+          };
+
+          if (email) {
+            body.email = email;
+          }
+
+          const options: any = {
+            method: 'POST',
+            url: `${credentials.baseUrl}/users`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: body,
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
         }
 
-        if (Array.isArray(responseData)) {
-          returnData.push(...responseData.map((item) => ({ json: item })));
-        } else {
-          returnData.push({ json: responseData });
+        case 'getUser': {
+          const userId = this.getNodeParameter('userId', i) as string;
+
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl}/users/${encodeURIComponent(userId)}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
         }
-      } catch (error) {
-        if (this.continueOnFail()) {
-          returnData.push({ json: { error: (error as Error).message } });
-          continue;
+
+        case 'getAllUsers': {
+          const page = this.getNodeParameter('page', i) as number;
+          const limit = this.getNodeParameter('limit', i) as number;
+          const filtersParam = this.getNodeParameter('filters', i) as string;
+
+          let filters: any = {};
+          if (filtersParam) {
+            try {
+              filters = typeof filtersParam === 'string' ? JSON.parse(filtersParam) : filtersParam;
+            } catch (error: any) {
+              throw new NodeOperationError(this.getNode(), `Invalid JSON in filters: ${error.message}`);
+            }
+          }
+
+          const queryParams: string[] = [];
+          if (page) queryParams.push(`page=${page}`);
+          if (limit) queryParams.push(`limit=${limit}`);
+
+          Object.keys(filters).forEach((key: string) => {
+            queryParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(filters[key])}`);
+          });
+
+          const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl}/users${queryString}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'updateUser': {
+          const userId = this.getNodeParameter('userId', i) as string;
+          const propertiesParam = this.getNodeParameter('properties', i) as string;
+
+          let properties: any = {};
+          try {
+            properties = typeof propertiesParam === 'string' ? JSON.parse(propertiesParam) : propertiesParam;
+          } catch (error: any) {
+            throw new NodeOperationError(this.getNode(), `Invalid JSON in properties: ${error.message}`);
+          }
+
+          const options: any = {
+            method: 'PUT',
+            url: `${credentials.baseUrl}/users/${encodeURIComponent(userId)}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: {
+              properties: properties,
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'deleteUser': {
+          const userId = this.getNodeParameter('userId', i) as string;
+
+          const options: any = {
+            method: 'DELETE',
+            url: `${credentials.baseUrl}/users/${encodeURIComponent(userId)}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        default:
+          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+      }
+
+      returnData.push({ json: result, pairedItem: { item: i } });
+
+    } catch (error: any) {
+      if (this.continueOnFail()) {
+        returnData.push({ json: { error: error.message }, pairedItem: { item: i } });
+      } else {
+        if (error.httpCode === 401) {
+          throw new NodeApiError(this.getNode(), error, {
+            message: 'Invalid API credentials',
+            description: 'Please check your UserPilot API key',
+          });
+        }
+        if (error.httpCode === 404) {
+          throw new NodeApiError(this.getNode(), error, {
+            message: 'User not found',
+            description: 'The specified user does not exist',
+          });
         }
         throw error;
       }
     }
-
-    return [returnData];
   }
+
+  return returnData;
 }
 
-async function handleUserOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'identify': return user.identify.call(this, index);
-    case 'update': return user.update.call(this, index);
-    case 'get': return user.get.call(this, index);
-    case 'delete': return user.deleteUser.call(this, index);
-    case 'list': return user.list.call(this, index);
-    case 'search': return user.search.call(this, index);
-    case 'bulkUpdate': return user.bulkUpdate.call(this, index);
-    case 'bulkImport': return user.bulkImport.call(this, index);
-    case 'getEvents': return user.getEvents.call(this, index);
-    case 'getFlows': return user.getFlows.call(this, index);
-    case 'merge': return user.merge.call(this, index);
-    default: throw new Error(`Unknown user operation: ${operation}`);
+// PARSE ERROR for unknown — manual fix needed
+// Raw: // No additional imports
+
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: {
+    show: {
+      resource: ['events'],
+    },
+  },
+  options: [
+    {
+      name: 'Create Event',
+      value: 'createEvent',
+      description: 'Track a cus
+
+async function executeFlowsOperations(
+  this: IExecuteFunctions,
+  items: INodeExecutionData[],
+): Promise<INodeExecutionData[]> {
+  const returnData: INodeExecutionData[] = [];
+  const operation = this.getNodeParameter('operation', 0) as string;
+  const credentials = await this.getCredentials('userpilotApi') as any;
+
+  for (let i = 0; i < items.length; i++) {
+    try {
+      let result: any;
+
+      switch (operation) {
+        case 'getAllFlows': {
+          const status = this.getNodeParameter('status', i) as string;
+          const type = this.getNodeParameter('type', i) as string;
+
+          const queryParams: string[] = [];
+          if (status) queryParams.push(`status=${status}`);
+          if (type) queryParams.push(`type=${type}`);
+          const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+
+          const options: any = {
+            method: 'GET',
+            url: `https://api.userpilot.com/v1/flows${queryString}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'getFlow': {
+          const flowId = this.getNodeParameter('flowId', i) as string;
+
+          const options: any = {
+            method: 'GET',
+            url: `https://api.userpilot.com/v1/flows/${flowId}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'triggerFlow': {
+          const flowId = this.getNodeParameter('flowId', i) as string;
+          const userId = this.getNodeParameter('userId', i) as string;
+          const userEmail = this.getNodeParameter('userEmail', i) as string;
+
+          if (!userId && !userEmail) {
+            throw new NodeOperationError(
+              this.getNode(),
+              'Either User ID or User Email must be provided'
+            );
+          }
+
+          const body: any = {};
+          if (userId) body.user_id = userId;
+          if (userEmail) body.email = userEmail;
+
+          const options: any = {
+            method: 'POST',
+            url: `https://api.userpilot.com/v1/flows/${flowId}/trigger`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body,
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'getFlowAnalytics': {
+          const flowId = this.getNodeParameter('flowId', i) as string;
+          const dateRange = this.getNodeParameter('dateRange', i) as string;
+
+          const options: any = {
+            method: 'GET',
+            url: `https://api.userpilot.com/v1/flows/${flowId}/analytics?date_range=${dateRange}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'updateFlowStatus': {
+          const flowId = this.getNodeParameter('flowId', i) as string;
+          const newStatus = this.getNodeParameter('newStatus', i) as string;
+
+          const options: any = {
+            method: 'PUT',
+            url: `https://api.userpilot.com/v1/flows/${flowId}/status`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: {
+              status: newStatus,
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        default:
+          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+      }
+
+      returnData.push({
+        json: result,
+        pairedItem: { item: i },
+      });
+
+    } catch (error: any) {
+      if (this.continueOnFail()) {
+        returnData.push({
+          json: { error: error.message },
+          pairedItem: { item: i },
+        });
+      } else {
+        if (error.httpCode) {
+          throw new NodeApiError(this.getNode(), error);
+        }
+        throw new NodeOperationError(this.getNode(), error.message);
+      }
+    }
   }
+
+  return returnData;
 }
 
-async function handleCompanyOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'identify': return company.identify.call(this, index);
-    case 'update': return company.update.call(this, index);
-    case 'get': return company.get.call(this, index);
-    case 'delete': return company.deleteCompany.call(this, index);
-    case 'list': return company.list.call(this, index);
-    case 'search': return company.search.call(this, index);
-    case 'bulkUpdate': return company.bulkUpdate.call(this, index);
-    case 'getUsers': return company.getUsers.call(this, index);
-    case 'getAnalytics': return company.getAnalytics.call(this, index);
-    default: throw new Error(`Unknown company operation: ${operation}`);
+async function executeChecklistsOperations(
+  this: IExecuteFunctions,
+  items: INodeExecutionData[],
+): Promise<INodeExecutionData[]> {
+  const returnData: INodeExecutionData[] = [];
+  const operation = this.getNodeParameter('operation', 0) as string;
+  const credentials = await this.getCredentials('userpilotApi') as any;
+
+  for (let i = 0; i < items.length; i++) {
+    try {
+      let result: any;
+
+      switch (operation) {
+        case 'getAllChecklists': {
+          const status = this.getNodeParameter('status', i) as string;
+          
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl}/checklists`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            qs: {},
+            json: true,
+          };
+
+          if (status) {
+            options.qs.status = status;
+          }
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'getChecklist': {
+          const checklistId = this.getNodeParameter('checklistId', i) as string;
+          
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl}/checklists/${checklistId}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'completeChecklistItem': {
+          const checklistId = this.getNodeParameter('checklistId', i) as string;
+          const itemId = this.getNodeParameter('itemId', i) as string;
+          const userIdentification = this.getNodeParameter('userIdentification', i) as string;
+          
+          const body: any = {};
+          
+          if (userIdentification === 'userId') {
+            body.user_id = this.getNodeParameter('userId', i) as string;
+          } else {
+            body.email = this.getNodeParameter('email', i) as string;
+          }
+          
+          const options: any = {
+            method: 'POST',
+            url: `${credentials.baseUrl}/checklists/${checklistId}/items/${itemId}/complete`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body,
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'getChecklistProgress': {
+          const checklistId = this.getNodeParameter('checklistId', i) as string;
+          const userIdentification = this.getNodeParameter('userIdentification', i) as string;
+          
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl}/checklists/${checklistId}/progress`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            qs: {},
+            json: true,
+          };
+
+          if (userIdentification === 'userId') {
+            options.qs.user_id = this.getNodeParameter('userId', i) as string;
+          } else {
+            options.qs.email = this.getNodeParameter('email', i) as string;
+          }
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'updateChecklistStatus': {
+          const checklistId = this.getNodeParameter('checklistId', i) as string;
+          const status = this.getNodeParameter('status', i) as string;
+          
+          const options: any = {
+            method: 'PUT',
+            url: `${credentials.baseUrl}/checklists/${checklistId}/status`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: {
+              status,
+            },
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        default:
+          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+      }
+
+      returnData.push({
+        json: result,
+        pairedItem: { item: i },
+      });
+
+    } catch (error: any) {
+      if (this.continueOnFail()) {
+        returnData.push({
+          json: { error: error.message },
+          pairedItem: { item: i },
+        });
+      } else {
+        throw new NodeApiError(this.getNode(), error);
+      }
+    }
   }
+
+  return returnData;
 }
 
-async function handleEventOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'track': return event.track.call(this, index);
-    case 'bulkTrack': return event.bulkTrack.call(this, index);
-    case 'bulkImport': return event.bulkImport.call(this, index);
-    case 'listDefinitions': return event.listDefinitions.call(this, index);
-    case 'getDefinition': return event.getDefinition.call(this, index);
-    case 'createDefinition': return event.createDefinition.call(this, index);
-    case 'getAnalytics': return event.getAnalytics.call(this, index);
-    default: throw new Error(`Unknown event operation: ${operation}`);
+async function executeSegmentsOperations(
+  this: IExecuteFunctions,
+  items: INodeExecutionData[],
+): Promise<INodeExecutionData[]> {
+  const returnData: INodeExecutionData[] = [];
+  const operation = this.getNodeParameter('operation', 0) as string;
+  const credentials = await this.getCredentials('userpilotApi') as any;
+
+  for (let i = 0; i < items.length; i++) {
+    try {
+      let result: any;
+
+      switch (operation) {
+        case 'getAllSegments': {
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            json: true,
+          };
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'getSegment': {
+          const segmentId = this.getNodeParameter('segmentId', i) as string;
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments/${segmentId}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            json: true,
+          };
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'createSegment': {
+          const name = this.getNodeParameter('name', i) as string;
+          const criteria = this.getNodeParameter('criteria', i) as any;
+          const description = this.getNodeParameter('description', i) as string;
+
+          const body: any = {
+            name,
+            criteria: typeof criteria === 'string' ? JSON.parse(criteria) : criteria,
+          };
+
+          if (description) {
+            body.description = description;
+          }
+
+          const options: any = {
+            method: 'POST',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body,
+            json: true,
+          };
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'updateSegment': {
+          const segmentId = this.getNodeParameter('segmentId', i) as string;
+          const criteria = this.getNodeParameter('criteria', i) as any;
+
+          const body: any = {
+            criteria: typeof criteria === 'string' ? JSON.parse(criteria) : criteria,
+          };
+
+          const options: any = {
+            method: 'PUT',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments/${segmentId}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body,
+            json: true,
+          };
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'getSegmentUsers': {
+          const segmentId = this.getNodeParameter('segmentId', i) as string;
+          const page = this.getNodeParameter('page', i) as number;
+          const limit = this.getNodeParameter('limit', i) as number;
+
+          const qs: any = {};
+          if (page) qs.page = page;
+          if (limit) qs.limit = limit;
+
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments/${segmentId}/users`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            qs,
+            json: true,
+          };
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        default:
+          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+      }
+
+      returnData.push({
+        json: result,
+        pairedItem: { item: i },
+      });
+    } catch (error: any) {
+      if (this.continueOnFail()) {
+        returnData.push({
+          json: { error: error.message },
+          pairedItem: { item: i },
+        });
+      } else {
+        throw new NodeApiError(this.getNode(), error);
+      }
+    }
   }
+
+  return returnData;
 }
 
-async function handleFlowOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'list': return flow.list.call(this, index);
-    case 'get': return flow.get.call(this, index);
-    case 'create': return flow.create.call(this, index);
-    case 'update': return flow.update.call(this, index);
-    case 'delete': return flow.deleteFlow.call(this, index);
-    case 'trigger': return flow.trigger.call(this, index);
-    case 'publish': return flow.publish.call(this, index);
-    case 'unpublish': return flow.unpublish.call(this, index);
-    case 'getAnalytics': return flow.getAnalytics.call(this, index);
-    case 'duplicate': return flow.duplicate.call(this, index);
-    default: throw new Error(`Unknown flow operation: ${operation}`);
-  }
-}
+async function executeSurveysOperations(
+  this: IExecuteFunctions,
+  items: INodeExecutionData[],
+): Promise<INodeExecutionData[]> {
+  const returnData: INodeExecutionData[] = [];
+  const operation = this.getNodeParameter('operation', 0) as string;
+  const credentials = await this.getCredentials('userpilotApi') as any;
 
-async function handleNpsOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'list': return nps.list.call(this, index);
-    case 'get': return nps.get.call(this, index);
-    case 'create': return nps.create.call(this, index);
-    case 'update': return nps.update.call(this, index);
-    case 'delete': return nps.deleteNps.call(this, index);
-    case 'getResponses': return nps.getResponses.call(this, index);
-    case 'publish': return nps.publish.call(this, index);
-    case 'unpublish': return nps.unpublish.call(this, index);
-    case 'getAnalytics': return nps.getAnalytics.call(this, index);
-    case 'exportData': return nps.exportData.call(this, index);
-    default: throw new Error(`Unknown NPS operation: ${operation}`);
-  }
-}
+  for (let i = 0; i < items.length; i++) {
+    try {
+      let result: any;
 
-async function handleChecklistOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'list': return checklist.list.call(this, index);
-    case 'get': return checklist.get.call(this, index);
-    case 'create': return checklist.create.call(this, index);
-    case 'update': return checklist.update.call(this, index);
-    case 'delete': return checklist.deleteChecklist.call(this, index);
-    case 'publish': return checklist.publish.call(this, index);
-    case 'unpublish': return checklist.unpublish.call(this, index);
-    case 'getAnalytics': return checklist.getAnalytics.call(this, index);
-    case 'getUserProgress': return checklist.getUserProgress.call(this, index);
-    default: throw new Error(`Unknown checklist operation: ${operation}`);
-  }
-}
+      switch (operation) {
+        case 'getAllSurveys': {
+          const type = this.getNodeParameter('type', i) as string;
+          const status = this.getNodeParameter('status', i) as string;
 
-async function handleResourceCenterOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'get': return resourceCenter.get.call(this, index);
-    case 'update': return resourceCenter.update.call(this, index);
-    case 'listModules': return resourceCenter.listModules.call(this, index);
-    case 'createModule': return resourceCenter.createModule.call(this, index);
-    case 'updateModule': return resourceCenter.updateModule.call(this, index);
-    case 'deleteModule': return resourceCenter.deleteModule.call(this, index);
-    case 'reorderModules': return resourceCenter.reorderModules.call(this, index);
-    case 'getModuleAnalytics': return resourceCenter.getModuleAnalytics.call(this, index);
-    default: throw new Error(`Unknown resource center operation: ${operation}`);
-  }
-}
+          const qs: any = {};
+          if (type) qs.type = type;
+          if (status) qs.status = status;
 
-async function handleSegmentOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'list': return segment.list.call(this, index);
-    case 'get': return segment.get.call(this, index);
-    case 'create': return segment.create.call(this, index);
-    case 'update': return segment.update.call(this, index);
-    case 'delete': return segment.deleteSegment.call(this, index);
-    case 'getUsers': return segment.getUsers.call(this, index);
-    case 'getSize': return segment.getSize.call(this, index);
-    default: throw new Error(`Unknown segment operation: ${operation}`);
-  }
-}
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            qs,
+            json: true,
+          };
 
-async function handleDataExportOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'create': return dataExport.create.call(this, index);
-    case 'getStatus': return dataExport.getStatus.call(this, index);
-    case 'download': return dataExport.download.call(this, index);
-    case 'list': return dataExport.list.call(this, index);
-    case 'cancel': return dataExport.cancel.call(this, index);
-    default: throw new Error(`Unknown data export operation: ${operation}`);
-  }
-}
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
 
-async function handleJobOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'getStatus': return job.getStatus.call(this, index);
-    case 'list': return job.list.call(this, index);
-    case 'cancel': return job.cancel.call(this, index);
-    case 'retry': return job.retry.call(this, index);
-    case 'getErrors': return job.getErrors.call(this, index);
-    default: throw new Error(`Unknown job operation: ${operation}`);
-  }
-}
+        case 'getSurvey': {
+          const surveyId = this.getNodeParameter('surveyId', i) as string;
 
-async function handleSpotlightOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'list': return spotlight.list.call(this, index);
-    case 'get': return spotlight.get.call(this, index);
-    case 'create': return spotlight.create.call(this, index);
-    case 'update': return spotlight.update.call(this, index);
-    case 'delete': return spotlight.deleteSpotlight.call(this, index);
-    case 'publish': return spotlight.publish.call(this, index);
-    case 'unpublish': return spotlight.unpublish.call(this, index);
-    case 'getAnalytics': return spotlight.getAnalytics.call(this, index);
-    default: throw new Error(`Unknown spotlight operation: ${operation}`);
-  }
-}
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            json: true,
+          };
 
-async function handleBannerOperations(this: IExecuteFunctions, operation: string, index: number): Promise<any> {
-  switch (operation) {
-    case 'list': return banner.list.call(this, index);
-    case 'get': return banner.get.call(this, index);
-    case 'create': return banner.create.call(this, index);
-    case 'update': return banner.update.call(this, index);
-    case 'delete': return banner.deleteBanner.call(this, index);
-    case 'publish': return banner.publish.call(this, index);
-    case 'unpublish': return banner.unpublish.call(this, index);
-    case 'getAnalytics': return banner.getAnalytics.call(this, index);
-    default: throw new Error(`Unknown banner operation: ${operation}`);
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'createSurveyResponse': {
+          const surveyId = this.getNodeParameter('surveyId', i) as string;
+          const userId = this.getNodeParameter('userId', i) as string;
+          const answersInput = this.getNodeParameter('answers', i) as string;
+
+          let answers: any;
+          try {
+            answers = typeof answersInput === 'string' ? JSON.parse(answersInput) : answersInput;
+          } catch (error: any) {
+            throw new NodeOperationError(this.getNode(), 'Invalid JSON format for answers parameter');
+          }
+
+          const body: any = {
+            user_id: userId,
+            answers: answers,
+          };
+
+          const options: any = {
+            method: 'POST',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}/responses`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body,
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'getSurveyResponses': {
+          const surveyId = this.getNodeParameter('surveyId', i) as string;
+          const dateRange = this.getNodeParameter('dateRange', i) as any;
+
+          const qs: any = {};
+          if (dateRange && dateRange.range) {
+            if (dateRange.range.startDate) {
+              qs.start_date = new Date(dateRange.range.startDate).toISOString();
+            }
+            if (dateRange.range.endDate) {
+              qs.end_date = new Date(dateRange.range.endDate).toISOString();
+            }
+          }
+
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}/responses`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            qs,
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'getSurveyAnalytics': {
+          const surveyId = this.getNodeParameter('surveyId', i) as string;
+          const dateRange = this.getNodeParameter('dateRange', i) as any;
+
+          const qs: any = {};
+          if (dateRange && dateRange.range) {
+            if (dateRange.range.startDate) {
+              qs.start_date = new Date(dateRange.range.startDate).toISOString();
+            }
+            if (dateRange.range.endDate) {
+              qs.end_date = new Date(dateRange.range.endDate).toISOString();
+            }
+          }
+
+          const options: any = {
+            method: 'GET',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}/analytics`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            qs,
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        case 'updateSurveyStatus': {
+          const surveyId = this.getNodeParameter('surveyId', i) as string;
+          const status = this.getNodeParameter('status', i) as string;
+
+          const body: any = {
+            status: status,
+          };
+
+          const options: any = {
+            method: 'PUT',
+            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}/status`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body,
+            json: true,
+          };
+
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+
+        default:
+          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+      }
+
+      returnData.push({ json: result, pairedItem: { item: i } });
+    } catch (error: any) {
+      if (this.continueOnFail()) {
+        returnData.push({ 
+          json: { error: error.message }, 
+          pairedItem: { item: i } 
+        });
+      } else {
+        if (error.response && error.response.body) {
+          const errorMessage = error.response.body.message || error.response.body.error || error.message;
+          throw new NodeApiError(this.getNode(), error.response.body, { 
+            message: errorMessage,
+            httpCode: error.response.statusCode?.toString() 
+          });
+        }
+        throw error;
+      }
+    }
   }
+
+  return returnData;
 }
