@@ -1,9 +1,12 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+import {
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
 
 export class UserPilotApi implements ICredentialType {
 	name = 'userPilotApi';
 	displayName = 'UserPilot API';
-	documentationUrl = 'https://docs.userpilot.com/article/136-rest-api';
+	documentationUrl = 'https://docs.userpilot.com/reference/api-authentication';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
@@ -12,16 +15,16 @@ export class UserPilotApi implements ICredentialType {
 			typeOptions: {
 				password: true,
 			},
-			required: true,
 			default: '',
-			description: 'The API key for UserPilot API authentication. Get your API key from Settings > Integrations > API in your UserPilot dashboard.',
+			required: true,
+			description: 'The API key for UserPilot API. You can generate API keys from the UserPilot dashboard under Settings > API Keys.',
 		},
 		{
 			displayName: 'API Base URL',
 			name: 'baseUrl',
 			type: 'string',
-			required: true,
 			default: 'https://api.userpilot.com/v1',
+			required: true,
 			description: 'The base URL for the UserPilot API',
 		},
 	];
