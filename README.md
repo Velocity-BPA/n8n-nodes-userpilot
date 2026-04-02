@@ -8,25 +8,25 @@
 >
 > For licensing information, visit https://velobpa.com/licensing or contact licensing@velobpa.com.
 
-This n8n community node provides comprehensive integration with UserPilot's user onboarding and product adoption platform. With 5+ resources implemented, it enables automated user journey management, onboarding flow creation, survey deployment, user segmentation, and checklist management through n8n workflows.
+A comprehensive n8n community node for integrating with UserPilot's product adoption platform. This node provides 6 resource types with full CRUD operations, enabling seamless automation of user onboarding, product analytics, feature adoption tracking, and user experience optimization workflows.
 
 ![n8n Community Node](https://img.shields.io/badge/n8n-Community%20Node-blue)
 ![License](https://img.shields.io/badge/license-BSL--1.1-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
-![UserPilot](https://img.shields.io/badge/UserPilot-API-orange)
-![Onboarding](https://img.shields.io/badge/Onboarding-Automation-green)
-![User Journey](https://img.shields.io/badge/User%20Journey-Management-purple)
+![UserPilot](https://img.shields.io/badge/UserPilot-Product%20Adoption-purple)
+![User Experience](https://img.shields.io/badge/UX-Optimization-green)
+![Analytics](https://img.shields.io/badge/Analytics-Tracking-orange)
 
 ## Features
 
-- **User Management** - Create, update, and manage user profiles with custom properties and behavioral tracking
-- **Onboarding Flows** - Trigger and control interactive product tours and onboarding sequences
-- **Dynamic Checklists** - Generate and manage personalized onboarding checklists based on user segments
-- **User Segmentation** - Create and manage dynamic user segments for targeted experiences
-- **Survey Automation** - Deploy NPS, CSAT, and custom surveys to collect user feedback
-- **Event Tracking** - Track custom events and user interactions for behavioral analysis
-- **Goal Monitoring** - Set up and monitor user completion goals and milestones
-- **Real-time Sync** - Bidirectional data synchronization with external systems and databases
+- **Complete User Management** - Create, update, delete, and retrieve user profiles with custom attributes and segmentation
+- **Event Tracking & Analytics** - Track custom events, user interactions, and product usage metrics for data-driven insights
+- **Flow Automation** - Manage user onboarding flows, feature tours, and guided experiences programmatically
+- **Advanced Segmentation** - Create and manage user segments based on behavior, attributes, and engagement patterns
+- **Checklist Management** - Build and track user onboarding checklists and feature adoption milestones
+- **Survey Operations** - Deploy, manage, and analyze user feedback surveys and NPS campaigns
+- **Real-time Sync** - Bidirectional data synchronization between UserPilot and your n8n workflows
+- **Enterprise Security** - Secure API key authentication with comprehensive error handling and validation
 
 ## Installation
 
@@ -61,129 +61,137 @@ n8n start
 
 | Field | Description | Required |
 |-------|-------------|----------|
-| API Token | Your UserPilot API token from Settings > Integrations > API | Yes |
-| App ID | Your UserPilot application ID | Yes |
-| Environment | Environment (production/staging) | No |
+| API Key | Your UserPilot API key from Settings → API Keys | Yes |
+| Environment | Production or Sandbox environment | Yes |
 
 ## Resources & Operations
 
-### 1. Users
+### 1. User
 
 | Operation | Description |
 |-----------|-------------|
-| Create | Create a new user profile with custom properties |
-| Update | Update existing user information and attributes |
-| Get | Retrieve user details and associated data |
-| Delete | Remove user from UserPilot |
+| Create | Create a new user profile with custom attributes and properties |
+| Get | Retrieve user details by user ID or external ID |
+| Update | Update user attributes, properties, and segmentation data |
+| Delete | Remove user from UserPilot system |
 | List | Get paginated list of users with filtering options |
-| Track Event | Record custom events for user behavioral tracking |
+| Get Activity | Retrieve user activity log and engagement history |
 
-### 2. Flows
-
-| Operation | Description |
-|-----------|-------------|
-| Create | Create new onboarding flow or product tour |
-| Update | Modify existing flow content and targeting |
-| Get | Retrieve flow details and statistics |
-| Delete | Remove flow from account |
-| List | Get all flows with filtering and pagination |
-| Trigger | Manually trigger flow for specific users |
-| Pause | Pause active flow |
-| Resume | Resume paused flow |
-
-### 3. Checklists
+### 2. Event
 
 | Operation | Description |
 |-----------|-------------|
-| Create | Create new onboarding checklist |
+| Track | Send custom events to track user actions and behaviors |
+| Get | Retrieve specific event details by event ID |
+| List | Get paginated list of events with date range filtering |
+| Update | Modify event properties and metadata |
+| Delete | Remove tracked events from the system |
+| Get Analytics | Retrieve event analytics and aggregation data |
+
+### 3. Flow
+
+| Operation | Description |
+|-----------|-------------|
+| Create | Create new onboarding flows and guided tours |
+| Get | Retrieve flow configuration and settings |
+| Update | Modify flow steps, triggers, and targeting rules |
+| Delete | Remove flows from the system |
+| List | Get all flows with filtering by status and type |
+| Trigger | Manually trigger flows for specific users or segments |
+| Get Stats | Retrieve flow performance metrics and completion rates |
+
+### 4. Segment
+
+| Operation | Description |
+|-----------|-------------|
+| Create | Create user segments based on attributes and behaviors |
+| Get | Retrieve segment configuration and user count |
+| Update | Modify segment rules and criteria |
+| Delete | Remove segments from the system |
+| List | Get all segments with metadata and statistics |
+| Get Users | Retrieve users belonging to a specific segment |
+
+### 5. Checklist
+
+| Operation | Description |
+|-----------|-------------|
+| Create | Create onboarding checklists with custom steps |
+| Get | Retrieve checklist configuration and progress tracking |
 | Update | Modify checklist items and completion criteria |
-| Get | Retrieve checklist details and progress |
-| Delete | Remove checklist |
+| Delete | Remove checklists from the system |
 | List | Get all checklists with filtering options |
-| Mark Complete | Mark checklist item as completed for user |
-| Reset Progress | Reset user's checklist progress |
+| Track Progress | Update user progress on checklist items |
+| Get Analytics | Retrieve checklist completion analytics |
 
-### 4. Segments
-
-| Operation | Description |
-|-----------|-------------|
-| Create | Create new user segment with targeting rules |
-| Update | Modify segment criteria and conditions |
-| Get | Retrieve segment details and user count |
-| Delete | Remove segment |
-| List | Get all segments with pagination |
-| Get Users | Retrieve users belonging to specific segment |
-
-### 5. Surveys
+### 6. Survey
 
 | Operation | Description |
 |-----------|-------------|
-| Create | Create new survey (NPS, CSAT, custom) |
-| Update | Modify survey questions and targeting |
-| Get | Retrieve survey details and responses |
-| Delete | Remove survey |
-| List | Get all surveys with filtering options |
-| Get Responses | Retrieve survey response data |
-| Send | Manually trigger survey for specific users |
+| Create | Create NPS, CSAT, and custom feedback surveys |
+| Get | Retrieve survey configuration and responses |
+| Update | Modify survey questions and targeting settings |
+| Delete | Remove surveys from the system |
+| List | Get all surveys with response statistics |
+| Get Responses | Retrieve survey responses with filtering |
+| Send | Manually send surveys to users or segments |
 
 ## Usage Examples
 
 ```javascript
-// Create a new user with custom properties
+// Track user signup event with custom properties
 {
+  "event_name": "user_signup",
   "user_id": "user_12345",
-  "email": "john.doe@company.com",
-  "created_at": "2024-01-15T10:30:00Z",
   "properties": {
-    "name": "John Doe",
+    "source": "organic",
     "plan": "pro",
-    "company": "Acme Corp",
-    "role": "admin"
-  }
-}
-```
-
-```javascript
-// Trigger onboarding flow for new user
-{
-  "flow_id": "flow_abc123",
-  "user_id": "user_12345",
-  "trigger_type": "manual",
-  "context": {
-    "feature": "dashboard",
-    "plan_type": "pro"
-  }
-}
-```
-
-```javascript
-// Create user segment for enterprise customers
-{
-  "name": "Enterprise Users",
-  "description": "Users on enterprise plans",
-  "conditions": {
-    "AND": [
-      {"property": "plan", "operator": "equals", "value": "enterprise"},
-      {"property": "created_at", "operator": "greater_than", "value": "30_days_ago"}
-    ]
-  }
-}
-```
-
-```javascript
-// Deploy NPS survey to specific segment
-{
-  "type": "nps",
-  "title": "How likely are you to recommend our product?",
-  "segment_id": "segment_xyz789",
-  "schedule": {
-    "trigger": "time_based",
-    "delay": "7_days"
+    "company_size": "50-100"
   },
-  "settings": {
-    "follow_up_enabled": true,
-    "anonymous": false
-  }
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```javascript
+// Create user segment for high-value customers
+{
+  "name": "High Value Customers",
+  "rules": {
+    "and": [
+      {"attribute": "plan", "operator": "equals", "value": "enterprise"},
+      {"attribute": "mrr", "operator": "greater_than", "value": 500},
+      {"attribute": "last_seen", "operator": "within", "value": "7d"}
+    ]
+  },
+  "description": "Enterprise users with high MRR and recent activity"
+}
+```
+
+```javascript
+// Update user attributes for personalization
+{
+  "user_id": "user_12345",
+  "attributes": {
+    "role": "admin",
+    "company": "Acme Corp",
+    "onboarding_completed": true,
+    "feature_flags": ["advanced_analytics", "api_access"]
+  },
+  "last_seen": "2024-01-15T14:25:00Z"
+}
+```
+
+```javascript
+// Create onboarding checklist for new users
+{
+  "name": "Getting Started Checklist",
+  "items": [
+    {"title": "Complete profile", "required": true},
+    {"title": "Connect data source", "required": true},
+    {"title": "Create first dashboard", "required": false},
+    {"title": "Invite team members", "required": false}
+  ],
+  "auto_trigger": true,
+  "target_segment": "new_users"
 }
 ```
 
@@ -191,12 +199,12 @@ n8n start
 
 | Error | Description | Solution |
 |-------|-------------|----------|
-| 401 Unauthorized | Invalid API token or App ID | Verify credentials in UserPilot dashboard |
-| 403 Forbidden | Insufficient permissions for operation | Check API token permissions and plan limits |
-| 404 Not Found | Resource (user, flow, etc.) doesn't exist | Verify resource ID and ensure it exists |
-| 429 Rate Limited | Too many API requests | Implement delays between requests |
-| 422 Validation Error | Invalid data format or missing required fields | Check payload structure and required fields |
-| 500 Server Error | UserPilot service temporarily unavailable | Retry request after delay |
+| 401 Unauthorized | Invalid or expired API key | Verify API key in credentials settings |
+| 404 Not Found | User, flow, or resource doesn't exist | Check resource ID and ensure it exists in UserPilot |
+| 429 Rate Limited | Too many API requests | Implement delays between requests or reduce frequency |
+| 400 Bad Request | Invalid data format or missing required fields | Validate input data and check required parameters |
+| 422 Validation Error | Data doesn't meet UserPilot's validation rules | Review field constraints and data types |
+| 500 Server Error | UserPilot service temporarily unavailable | Retry request after delay or check service status |
 
 ## Development
 
@@ -241,5 +249,5 @@ Contributions are welcome! Please ensure:
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/Velocity-BPA/n8n-nodes-userpilot/issues)
-- **UserPilot API Documentation**: [UserPilot Developer Docs](https://docs.userpilot.com/api)
+- **UserPilot API**: [UserPilot Developer Documentation](https://docs.userpilot.com/api)
 - **UserPilot Community**: [UserPilot Help Center](https://help.userpilot.com)
