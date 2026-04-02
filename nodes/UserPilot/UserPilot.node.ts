@@ -49,461 +49,636 @@ export class UserPilot implements INodeType {
         noDataExpression: true,
         options: [
           {
-            name: 'Users',
-            value: 'users',
+            name: 'User',
+            value: 'user',
           },
           {
-            name: 'unknown',
-            value: 'unknown',
+            name: 'Event',
+            value: 'event',
           },
           {
-            name: 'Flows',
-            value: 'flows',
+            name: 'Flow',
+            value: 'flow',
           },
           {
-            name: 'Checklists',
-            value: 'checklists',
+            name: 'Segment',
+            value: 'segment',
           },
           {
-            name: 'Segments',
-            value: 'segments',
+            name: 'Checklist',
+            value: 'checklist',
           },
           {
-            name: 'Surveys',
-            value: 'surveys',
+            name: 'Survey',
+            value: 'survey',
           }
         ],
-        default: 'users',
+        default: 'user',
       },
       // Operation dropdowns per resource
 {
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-    },
-  },
-  options: [
-    {
-      name: 'Create User',
-      value: 'createUser',
-      description: 'Create or update a user profile',
-      action: 'Create user',
-    },
-    {
-      name: 'Get User',
-      value: 'getUser',
-      description: 'Retrieve a specific user profile',
-      action: 'Get user',
-    },
-    {
-      name: 'Get All Users',
-      value: 'getAllUsers',
-      description: 'List all users with pagination',
-      action: 'Get all users',
-    },
-    {
-      name: 'Update User',
-      value: 'updateUser',
-      description: 'Update user properties and attributes',
-      action: 'Update user',
-    },
-    {
-      name: 'Delete User',
-      value: 'deleteUser',
-      description: 'Remove a user profile',
-      action: 'Delete user',
-    },
-  ],
-  default: 'createUser',
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['user'],
+		},
+	},
+	options: [
+		{
+			name: 'Create User',
+			value: 'createUser',
+			description: 'Create a new user',
+			action: 'Create user',
+		},
+		{
+			name: 'Get User',
+			value: 'getUser',
+			description: 'Get user by ID',
+			action: 'Get user',
+		},
+		{
+			name: 'Get Users',
+			value: 'getUsers',
+			description: 'List all users with filtering',
+			action: 'Get users',
+		},
+		{
+			name: 'Update User',
+			value: 'updateUser',
+			description: 'Update user properties',
+			action: 'Update user',
+		},
+		{
+			name: 'Delete User',
+			value: 'deleteUser',
+			description: 'Delete a user',
+			action: 'Delete user',
+		},
+	],
+	default: 'createUser',
 },
 {
   displayName: 'Operation',
   name: 'operation',
   type: 'options',
   noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['flows'],
-    },
-  },
+  displayOptions: { show: { resource: ['event'] } },
   options: [
-    {
-      name: 'Get All Flows',
-      value: 'getAllFlows',
-      description: 'List all flows and their status',
-      action: 'Get all flows',
-    },
-    {
-      name: 'Get Flow',
-      value: 'getFlow',
-      description: 'Get specific flow details and configuration',
-      action: 'Get a flow',
-    },
-    {
-      name: 'Trigger Flow',
-      value: 'triggerFlow',
-      description: 'Manually trigger a flow for a user',
-      action: 'Trigger a flow',
-    },
-    {
-      name: 'Get Flow Analytics',
-      value: 'getFlowAnalytics',
-      description: 'Get flow performance metrics',
-      action: 'Get flow analytics',
-    },
-    {
-      name: 'Update Flow Status',
-      value: 'updateFlowStatus',
-      description: 'Enable or disable a flow',
-      action: 'Update flow status',
-    },
+    { name: 'Create Event', value: 'createEvent', description: 'Track a custom event for a user', action: 'Create event' },
+    { name: 'Get Events', value: 'getEvents', description: 'Retrieve events with filtering', action: 'Get events' },
+    { name: 'Create Events Batch', value: 'createEventsBatch', description: 'Track multiple events in a single request', action: 'Create events batch' }
   ],
-  default: 'getAllFlows',
+  default: 'createEvent',
 },
 {
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['checklists'],
-    },
-  },
-  options: [
-    {
-      name: 'Get All Checklists',
-      value: 'getAllChecklists',
-      description: 'List all checklists and their configuration',
-      action: 'Get all checklists',
-    },
-    {
-      name: 'Get Checklist',
-      value: 'getChecklist',
-      description: 'Get specific checklist details',
-      action: 'Get a checklist',
-    },
-    {
-      name: 'Complete Checklist Item',
-      value: 'completeChecklistItem',
-      description: 'Mark checklist item as complete for user',
-      action: 'Complete checklist item',
-    },
-    {
-      name: 'Get Checklist Progress',
-      value: 'getChecklistProgress',
-      description: 'Get user progress on checklist',
-      action: 'Get checklist progress',
-    },
-    {
-      name: 'Update Checklist Status',
-      value: 'updateChecklistStatus',
-      description: 'Enable or disable checklist',
-      action: 'Update checklist status',
-    },
-  ],
-  default: 'getAllChecklists',
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+		},
+	},
+	options: [
+		{
+			name: 'Get Flow',
+			value: 'getFlow',
+			description: 'Get flow details by ID',
+			action: 'Get a flow',
+		},
+		{
+			name: 'Get Flow Stats',
+			value: 'getFlowStats',
+			description: 'Get flow performance statistics',
+			action: 'Get flow statistics',
+		},
+		{
+			name: 'Get Flows',
+			value: 'getFlows',
+			description: 'List all flows',
+			action: 'Get all flows',
+		},
+		{
+			name: 'Trigger Flow',
+			value: 'triggerFlow',
+			description: 'Manually trigger a flow for a user',
+			action: 'Trigger a flow',
+		},
+		{
+			name: 'Get Flow Analytics',
+			value: 'getFlowAnalytics',
+			description: 'Get flow performance metrics',
+			action: 'Get flow analytics',
+		},
+		{
+			name: 'Update Flow Status',
+			value: 'updateFlowStatus',
+			description: 'Enable or disable a flow',
+			action: 'Update flow status',
+		},
+	],
+	default: 'getFlows',
 },
 {
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['segments'],
-    },
-  },
-  options: [
-    {
-      name: 'Get All Segments',
-      value: 'getAllSegments',
-      description: 'List all user segments',
-      action: 'Get all segments',
-    },
-    {
-      name: 'Get Segment',
-      value: 'getSegment',
-      description: 'Get specific segment configuration and criteria',
-      action: 'Get a segment',
-    },
-    {
-      name: 'Create Segment',
-      value: 'createSegment',
-      description: 'Create a new user segment',
-      action: 'Create a segment',
-    },
-    {
-      name: 'Update Segment',
-      value: 'updateSegment',
-      description: 'Update segment criteria and configuration',
-      action: 'Update a segment',
-    },
-    {
-      name: 'Get Segment Users',
-      value: 'getSegmentUsers',
-      description: 'List users belonging to a segment',
-      action: 'Get segment users',
-    },
-  ],
-  default: 'getAllSegments',
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+		},
+	},
+	options: [
+		{
+			name: 'Get Segments',
+			value: 'getSegments',
+			description: 'List all segments',
+			action: 'Get segments',
+		},
+		{
+			name: 'Get Segment',
+			value: 'getSegment',
+			description: 'Get segment details by ID',
+			action: 'Get a segment',
+		},
+		{
+			name: 'Create Segment',
+			value: 'createSegment',
+			description: 'Create a new user segment',
+			action: 'Create a segment',
+		},
+		{
+			name: 'Update Segment',
+			value: 'updateSegment',
+			description: 'Update segment conditions',
+			action: 'Update a segment',
+		},
+		{
+			name: 'Delete Segment',
+			value: 'deleteSegment',
+			description: 'Delete a segment',
+			action: 'Delete a segment',
+		},
+		{
+			name: 'Get Segment Users',
+			value: 'getSegmentUsers',
+			description: 'Get users in a segment',
+			action: 'Get segment users',
+		},
+	],
+	default: 'getSegments',
 },
 {
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['surveys'],
-    },
-  },
-  options: [
-    {
-      name: 'Get All Surveys',
-      value: 'getAllSurveys',
-      description: 'List all surveys including NPS surveys',
-      action: 'Get all surveys',
-    },
-    {
-      name: 'Get Survey',
-      value: 'getSurvey',
-      description: 'Get specific survey configuration',
-      action: 'Get a survey',
-    },
-    {
-      name: 'Create Survey Response',
-      value: 'createSurveyResponse',
-      description: 'Submit a survey response',
-      action: 'Create survey response',
-    },
-    {
-      name: 'Get Survey Responses',
-      value: 'getSurveyResponses',
-      description: 'Get all responses for a survey',
-      action: 'Get survey responses',
-    },
-    {
-      name: 'Get Survey Analytics',
-      value: 'getSurveyAnalytics',
-      description: 'Get survey analytics including NPS scores',
-      action: 'Get survey analytics',
-    },
-    {
-      name: 'Update Survey Status',
-      value: 'updateSurveyStatus',
-      description: 'Enable or disable survey',
-      action: 'Update survey status',
-    },
-  ],
-  default: 'getAllSurveys',
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: { show: { resource: ['checklist'] } },
+	options: [
+		{ name: 'Get Checklists', value: 'getChecklists', description: 'List all checklists', action: 'Get checklists' },
+		{ name: 'Get Checklist', value: 'getChecklist', description: 'Get checklist details by ID', action: 'Get a checklist' },
+		{ name: 'Create Checklist', value: 'createChecklist', description: 'Create a new checklist', action: 'Create a checklist' },
+		{ name: 'Update Checklist', value: 'updateChecklist', description: 'Update checklist tasks', action: 'Update a checklist' },
+		{ name: 'Delete Checklist', value: 'deleteChecklist', description: 'Delete a checklist', action: 'Delete a checklist' },
+		{ name: 'Complete Checklist Task', value: 'completeChecklistTask', description: 'Mark a checklist task as complete for a user', action: 'Complete checklist task' },
+		{
+			name: 'Complete Checklist Item',
+			value: 'completeChecklistItem',
+			description: 'Mark checklist item as complete for user',
+			action: 'Complete checklist item',
+		},
+		{
+			name: 'Get Checklist Progress',
+			value: 'getChecklistProgress',
+			description: 'Get user progress on checklist',
+			action: 'Get checklist progress',
+		},
+		{
+			name: 'Update Checklist Status',
+			value: 'updateChecklistStatus',
+			description: 'Enable or disable checklist',
+			action: 'Update checklist status',
+		},
+	],
+	default: 'getChecklists',
+},
+{
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+		},
+	},
+	options: [
+		{
+			name: 'Get Surveys',
+			value: 'getSurveys',
+			description: 'List all surveys including NPS',
+			action: 'Get surveys',
+		},
+		{
+			name: 'Get Survey',
+			value: 'getSurvey',
+			description: 'Get survey details by ID',
+			action: 'Get survey',
+		},
+		{
+			name: 'Create Survey',
+			value: 'createSurvey',
+			description: 'Create a new survey or NPS',
+			action: 'Create survey',
+		},
+		{
+			name: 'Update Survey',
+			value: 'updateSurvey',
+			description: 'Update survey configuration',
+			action: 'Update survey',
+		},
+		{
+			name: 'Delete Survey',
+			value: 'deleteSurvey',
+			description: 'Delete a survey',
+			action: 'Delete survey',
+		},
+		{
+			name: 'Get Survey Responses',
+			value: 'getSurveyResponses',
+			description: 'Get survey responses and analytics',
+			action: 'Get survey responses',
+		},
+		{
+			name: 'Trigger Survey',
+			value: 'triggerSurvey',
+			description: 'Manually trigger a survey for a user',
+			action: 'Trigger survey',
+		},
+		{
+			name: 'Create Survey Response',
+			value: 'createSurveyResponse',
+			description: 'Submit a survey response',
+			action: 'Create survey response',
+		},
+		{
+			name: 'Get Survey Analytics',
+			value: 'getSurveyAnalytics',
+			description: 'Get survey analytics including NPS scores',
+			action: 'Get survey analytics',
+		},
+		{
+			name: 'Update Survey Status',
+			value: 'updateSurveyStatus',
+			description: 'Enable or disable survey',
+			action: 'Update survey status',
+		},
+	],
+	default: 'getSurveys',
 },
       // Parameter definitions
+{
+	displayName: 'User ID',
+	name: 'userId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['user'],
+			operation: ['createUser'],
+		},
+	},
+	default: '',
+	description: 'The unique identifier for the user',
+},
+{
+	displayName: 'Email',
+	name: 'email',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['user'],
+			operation: ['createUser'],
+		},
+	},
+	default: '',
+	description: 'The email address of the user',
+},
+{
+	displayName: 'Name',
+	name: 'name',
+	type: 'string',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['user'],
+			operation: ['createUser'],
+		},
+	},
+	default: '',
+	description: 'The name of the user',
+},
+{
+	displayName: 'Properties',
+	name: 'properties',
+	type: 'json',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['user'],
+			operation: ['createUser', 'updateUser'],
+		},
+	},
+	default: '{}',
+	description: 'Additional properties for the user as JSON object',
+},
+{
+	displayName: 'User ID',
+	name: 'userId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['user'],
+			operation: ['getUser', 'updateUser', 'deleteUser'],
+		},
+	},
+	default: '',
+	description: 'The unique identifier for the user',
+},
+{
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['user'],
+			operation: ['getUsers'],
+		},
+	},
+	default: 50,
+	description: 'Maximum number of users to return',
+},
+{
+	displayName: 'Offset',
+	name: 'offset',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['user'],
+			operation: ['getUsers'],
+		},
+	},
+	default: 0,
+	description: 'Number of users to skip',
+},
+{
+	displayName: 'Filters',
+	name: 'filters',
+	type: 'json',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['user'],
+			operation: ['getUsers'],
+		},
+	},
+	default: '{}',
+	description: 'Filters to apply when listing users as JSON object',
+},
 {
   displayName: 'User ID',
   name: 'userId',
   type: 'string',
   required: true,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['createUser'],
-    },
-  },
+  displayOptions: { show: { resource: ['event'], operation: ['createEvent'] } },
   default: '',
-  description: 'The unique identifier for the user',
+  description: 'The unique identifier of the user',
 },
 {
-  displayName: 'Email',
-  name: 'email',
+  displayName: 'Event Name',
+  name: 'eventName',
   type: 'string',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['createUser'],
-    },
-  },
+  required: true,
+  displayOptions: { show: { resource: ['event'], operation: ['createEvent'] } },
   default: '',
-  description: 'The user email address',
+  description: 'The name of the event to track',
 },
 {
   displayName: 'Properties',
   name: 'properties',
   type: 'json',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['createUser'],
-    },
-  },
+  displayOptions: { show: { resource: ['event'], operation: ['createEvent'] } },
   default: '{}',
-  description: 'Custom properties for the user profile',
+  description: 'Additional properties for the event as JSON object',
+},
+{
+  displayName: 'Timestamp',
+  name: 'timestamp',
+  type: 'dateTime',
+  displayOptions: { show: { resource: ['event'], operation: ['createEvent'] } },
+  default: '',
+  description: 'The timestamp when the event occurred',
 },
 {
   displayName: 'User ID',
   name: 'userId',
   type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['getUser'],
-    },
-  },
+  displayOptions: { show: { resource: ['event'], operation: ['getEvents'] } },
   default: '',
-  description: 'The unique identifier for the user to retrieve',
+  description: 'Filter events by user ID',
 },
 {
-  displayName: 'Page',
-  name: 'page',
-  type: 'number',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['getAllUsers'],
-    },
-  },
-  default: 1,
-  description: 'Page number for pagination',
+  displayName: 'Event Name',
+  name: 'eventName',
+  type: 'string',
+  displayOptions: { show: { resource: ['event'], operation: ['getEvents'] } },
+  default: '',
+  description: 'Filter events by event name',
+},
+{
+  displayName: 'Start Date',
+  name: 'startDate',
+  type: 'dateTime',
+  displayOptions: { show: { resource: ['event'], operation: ['getEvents'] } },
+  default: '',
+  description: 'Filter events from this date',
+},
+{
+  displayName: 'End Date',
+  name: 'endDate',
+  type: 'dateTime',
+  displayOptions: { show: { resource: ['event'], operation: ['getEvents'] } },
+  default: '',
+  description: 'Filter events until this date',
 },
 {
   displayName: 'Limit',
   name: 'limit',
   type: 'number',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['getAllUsers'],
-    },
-  },
-  default: 50,
-  description: 'Number of users per page',
+  displayOptions: { show: { resource: ['event'], operation: ['getEvents'] } },
+  default: 100,
+  description: 'Maximum number of events to return',
 },
 {
-  displayName: 'Filters',
-  name: 'filters',
-  type: 'json',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['getAllUsers'],
-    },
-  },
-  default: '{}',
-  description: 'Filter criteria for user search',
+  displayName: 'Offset',
+  name: 'offset',
+  type: 'number',
+  displayOptions: { show: { resource: ['event'], operation: ['getEvents'] } },
+  default: 0,
+  description: 'Number of events to skip',
 },
 {
-  displayName: 'User ID',
-  name: 'userId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['updateUser'],
-    },
-  },
-  default: '',
-  description: 'The unique identifier for the user to update',
-},
-{
-  displayName: 'Properties',
-  name: 'properties',
+  displayName: 'Events',
+  name: 'events',
   type: 'json',
   required: true,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['updateUser'],
-    },
-  },
-  default: '{}',
-  description: 'Properties to update for the user',
+  displayOptions: { show: { resource: ['event'], operation: ['createEventsBatch'] } },
+  default: '[]',
+  description: 'Array of events to create in batch as JSON',
 },
 {
-  displayName: 'User ID',
-  name: 'userId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['users'],
-      operation: ['deleteUser'],
-    },
-  },
-  default: '',
-  description: 'The unique identifier for the user to delete',
+	displayName: 'Flow ID',
+	name: 'flowId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+			operation: ['getFlow'],
+		},
+	},
+	default: '',
+	description: 'The ID of the flow to retrieve',
 },
 {
-  displayName: 'Status',
-  name: 'status',
-  type: 'options',
-  displayOptions: {
-    show: {
-      resource: ['flows'],
-      operation: ['getAllFlows'],
-    },
-  },
-  options: [
-    {
-      name: 'All',
-      value: '',
-    },
-    {
-      name: 'Active',
-      value: 'active',
-    },
-    {
-      name: 'Inactive',
-      value: 'inactive',
-    },
-    {
-      name: 'Draft',
-      value: 'draft',
-    },
-  ],
-  default: '',
-  description: 'Filter flows by status',
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+			operation: ['getFlows'],
+		},
+	},
+	default: 50,
+	description: 'Number of flows to return',
 },
 {
-  displayName: 'Type',
-  name: 'type',
-  type: 'options',
-  displayOptions: {
-    show: {
-      resource: ['flows'],
-      operation: ['getAllFlows'],
-    },
-  },
-  options: [
-    {
-      name: 'All',
-      value: '',
-    },
-    {
-      name: 'Onboarding',
-      value: 'onboarding',
-    },
-    {
-      name: 'Feature Adoption',
-      value: 'feature_adoption',
-    },
-    {
-      name: 'Product Tour',
-      value: 'product_tour',
-    },
-  ],
-  default: '',
-  description: 'Filter flows by type',
+	displayName: 'Offset',
+	name: 'offset',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+			operation: ['getFlows'],
+		},
+	},
+	default: 0,
+	description: 'Number of flows to skip',
+},
+{
+	displayName: 'Status',
+	name: 'status',
+	type: 'options',
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+			operation: ['getFlows'],
+		},
+	},
+	options: [
+		{
+			name: 'Active',
+			value: 'active',
+		},
+		{
+			name: 'Inactive',
+			value: 'inactive',
+		},
+		{
+			name: 'Draft',
+			value: 'draft',
+		},
+	],
+	default: '',
+	description: 'Filter flows by status',
+},
+{
+	displayName: 'Flow ID',
+	name: 'flowId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+			operation: ['triggerFlow'],
+		},
+	},
+	default: '',
+	description: 'The ID of the flow to trigger',
+},
+{
+	displayName: 'User ID',
+	name: 'userId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+			operation: ['triggerFlow'],
+		},
+	},
+	default: '',
+	description: 'The ID of the user to trigger the flow for',
+},
+{
+	displayName: 'Flow ID',
+	name: 'flowId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+			operation: ['getFlowStats'],
+		},
+	},
+	default: '',
+	description: 'The ID of the flow to get statistics for',
+},
+{
+	displayName: 'Start Date',
+	name: 'startDate',
+	type: 'dateTime',
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+			operation: ['getFlowStats'],
+		},
+	},
+	default: '',
+	description: 'Start date for statistics period',
+},
+{
+	displayName: 'End Date',
+	name: 'endDate',
+	type: 'dateTime',
+	displayOptions: {
+		show: {
+			resource: ['flow'],
+			operation: ['getFlowStats'],
+		},
+	},
+	default: '',
+	description: 'End date for statistics period',
 },
 {
   displayName: 'Flow ID',
@@ -512,61 +687,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['flows'],
-      operation: ['getFlow'],
-    },
-  },
-  default: '',
-  description: 'The ID of the flow to retrieve',
-},
-{
-  displayName: 'Flow ID',
-  name: 'flowId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['flows'],
-      operation: ['triggerFlow'],
-    },
-  },
-  default: '',
-  description: 'The ID of the flow to trigger',
-},
-{
-  displayName: 'User ID',
-  name: 'userId',
-  type: 'string',
-  displayOptions: {
-    show: {
-      resource: ['flows'],
-      operation: ['triggerFlow'],
-    },
-  },
-  default: '',
-  description: 'The ID of the user to trigger the flow for (required if email not provided)',
-},
-{
-  displayName: 'User Email',
-  name: 'userEmail',
-  type: 'string',
-  displayOptions: {
-    show: {
-      resource: ['flows'],
-      operation: ['triggerFlow'],
-    },
-  },
-  default: '',
-  description: 'The email of the user to trigger the flow for (required if user ID not provided)',
-},
-{
-  displayName: 'Flow ID',
-  name: 'flowId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['flows'],
+      resource: ['flow'],
       operation: ['getFlowAnalytics'],
     },
   },
@@ -579,7 +700,7 @@ export class UserPilot implements INodeType {
   type: 'options',
   displayOptions: {
     show: {
-      resource: ['flows'],
+      resource: ['flow'],
       operation: ['getFlowAnalytics'],
     },
   },
@@ -611,7 +732,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['flows'],
+      resource: ['flow'],
       operation: ['updateFlowStatus'],
     },
   },
@@ -625,7 +746,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['flows'],
+      resource: ['flow'],
       operation: ['updateFlowStatus'],
     },
   },
@@ -643,31 +764,206 @@ export class UserPilot implements INodeType {
   description: 'The new status for the flow',
 },
 {
-  displayName: 'Status',
-  name: 'status',
-  type: 'options',
-  displayOptions: {
-    show: {
-      resource: ['checklists'],
-      operation: ['getAllChecklists'],
-    },
-  },
-  options: [
-    {
-      name: 'All',
-      value: '',
-    },
-    {
-      name: 'Active',
-      value: 'active',
-    },
-    {
-      name: 'Inactive',
-      value: 'inactive',
-    },
-  ],
-  default: '',
-  description: 'Filter checklists by status',
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['getSegments'],
+		},
+	},
+	default: 50,
+	description: 'Maximum number of segments to return',
+},
+{
+	displayName: 'Offset',
+	name: 'offset',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['getSegments'],
+		},
+	},
+	default: 0,
+	description: 'Number of segments to skip',
+},
+{
+	displayName: 'Segment ID',
+	name: 'segmentId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['getSegment', 'updateSegment', 'deleteSegment', 'getSegmentUsers'],
+		},
+	},
+	default: '',
+	description: 'ID of the segment',
+},
+{
+	displayName: 'Name',
+	name: 'name',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['createSegment'],
+		},
+	},
+	default: '',
+	description: 'Name of the segment',
+},
+{
+	displayName: 'Name',
+	name: 'name',
+	type: 'string',
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['updateSegment'],
+		},
+	},
+	default: '',
+	description: 'Name of the segment',
+},
+{
+	displayName: 'Conditions',
+	name: 'conditions',
+	type: 'json',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['createSegment'],
+		},
+	},
+	default: '{}',
+	description: 'Segment conditions as JSON object',
+},
+{
+	displayName: 'Conditions',
+	name: 'conditions',
+	type: 'json',
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['updateSegment'],
+		},
+	},
+	default: '{}',
+	description: 'Segment conditions as JSON object',
+},
+{
+	displayName: 'Description',
+	name: 'description',
+	type: 'string',
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['createSegment'],
+		},
+	},
+	default: '',
+	description: 'Description of the segment',
+},
+{
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['getSegmentUsers'],
+		},
+	},
+	default: 50,
+	description: 'Maximum number of users to return',
+},
+{
+	displayName: 'Offset',
+	name: 'offset',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['segment'],
+			operation: ['getSegmentUsers'],
+		},
+	},
+	default: 0,
+	description: 'Number of users to skip',
+},
+{
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	displayOptions: { show: { resource: ['checklist'], operation: ['getChecklists'] } },
+	default: 50,
+	description: 'Maximum number of checklists to return',
+},
+{
+	displayName: 'Offset',
+	name: 'offset',
+	type: 'number',
+	displayOptions: { show: { resource: ['checklist'], operation: ['getChecklists'] } },
+	default: 0,
+	description: 'Number of checklists to skip',
+},
+{
+	displayName: 'Checklist ID',
+	name: 'checklistId',
+	type: 'string',
+	required: true,
+	displayOptions: { show: { resource: ['checklist'], operation: ['getChecklist', 'updateChecklist', 'deleteChecklist', 'completeChecklistTask'] } },
+	default: '',
+	description: 'ID of the checklist',
+},
+{
+	displayName: 'Name',
+	name: 'name',
+	type: 'string',
+	required: true,
+	displayOptions: { show: { resource: ['checklist'], operation: ['createChecklist'] } },
+	default: '',
+	description: 'Name of the checklist',
+},
+{
+	displayName: 'Tasks',
+	name: 'tasks',
+	type: 'json',
+	required: true,
+	displayOptions: { show: { resource: ['checklist'], operation: ['createChecklist', 'updateChecklist'] } },
+	default: '[]',
+	description: 'Array of tasks for the checklist',
+},
+{
+	displayName: 'Target Segment',
+	name: 'targetSegment',
+	type: 'string',
+	displayOptions: { show: { resource: ['checklist'], operation: ['createChecklist'] } },
+	default: '',
+	description: 'Target segment for the checklist',
+},
+{
+	displayName: 'User ID',
+	name: 'userId',
+	type: 'string',
+	required: true,
+	displayOptions: { show: { resource: ['checklist'], operation: ['completeChecklistTask'] } },
+	default: '',
+	description: 'ID of the user completing the task',
+},
+{
+	displayName: 'Task ID',
+	name: 'taskId',
+	type: 'string',
+	required: true,
+	displayOptions: { show: { resource: ['checklist'], operation: ['completeChecklistTask'] } },
+	default: '',
+	description: 'ID of the task to mark as complete',
 },
 {
   displayName: 'Checklist ID',
@@ -676,21 +972,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['checklists'],
-      operation: ['getChecklist'],
-    },
-  },
-  default: '',
-  description: 'The ID of the checklist to retrieve',
-},
-{
-  displayName: 'Checklist ID',
-  name: 'checklistId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['completeChecklistItem'],
     },
   },
@@ -704,7 +986,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['completeChecklistItem'],
     },
   },
@@ -717,7 +999,7 @@ export class UserPilot implements INodeType {
   type: 'options',
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['completeChecklistItem'],
     },
   },
@@ -741,7 +1023,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['completeChecklistItem'],
       userIdentification: ['userId'],
     },
@@ -756,7 +1038,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['completeChecklistItem'],
       userIdentification: ['email'],
     },
@@ -771,7 +1053,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['getChecklistProgress'],
     },
   },
@@ -784,7 +1066,7 @@ export class UserPilot implements INodeType {
   type: 'options',
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['getChecklistProgress'],
     },
   },
@@ -808,7 +1090,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['getChecklistProgress'],
       userIdentification: ['userId'],
     },
@@ -823,7 +1105,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['getChecklistProgress'],
       userIdentification: ['email'],
     },
@@ -838,7 +1120,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['updateChecklistStatus'],
     },
   },
@@ -852,7 +1134,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['checklists'],
+      resource: ['checklist'],
       operation: ['updateChecklistStatus'],
     },
   },
@@ -870,192 +1152,180 @@ export class UserPilot implements INodeType {
   description: 'The new status for the checklist',
 },
 {
-  displayName: 'Segment ID',
-  name: 'segmentId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['segments'],
-      operation: ['getSegment'],
-    },
-  },
-  default: '',
-  description: 'The ID of the segment to retrieve',
+	displayName: 'Survey ID',
+	name: 'surveyId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['getSurvey', 'updateSurvey', 'deleteSurvey', 'getSurveyResponses', 'triggerSurvey'],
+		},
+	},
+	default: '',
+	description: 'The ID of the survey',
 },
 {
-  displayName: 'Name',
-  name: 'name',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['segments'],
-      operation: ['createSegment'],
-    },
-  },
-  default: '',
-  description: 'The name of the segment',
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['getSurveys', 'getSurveyResponses'],
+		},
+	},
+	default: 20,
+	description: 'Maximum number of results to return',
 },
 {
-  displayName: 'Criteria',
-  name: 'criteria',
-  type: 'json',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['segments'],
-      operation: ['createSegment', 'updateSegment'],
-    },
-  },
-  default: '{}',
-  description: 'The criteria for the segment in JSON format',
+	displayName: 'Offset',
+	name: 'offset',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['getSurveys', 'getSurveyResponses'],
+		},
+	},
+	default: 0,
+	description: 'Number of results to skip',
 },
 {
-  displayName: 'Description',
-  name: 'description',
-  type: 'string',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['segments'],
-      operation: ['createSegment'],
-    },
-  },
-  default: '',
-  description: 'The description of the segment',
+	displayName: 'Type',
+	name: 'type',
+	type: 'options',
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['getSurveys'],
+		},
+	},
+	options: [
+		{
+			name: 'NPS',
+			value: 'nps',
+		},
+		{
+			name: 'Feedback',
+			value: 'feedback',
+		},
+		{
+			name: 'Rating',
+			value: 'rating',
+		},
+	],
+	default: '',
+	description: 'Filter surveys by type',
 },
 {
-  displayName: 'Segment ID',
-  name: 'segmentId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['segments'],
-      operation: ['updateSegment'],
-    },
-  },
-  default: '',
-  description: 'The ID of the segment to update',
+	displayName: 'Name',
+	name: 'name',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['createSurvey'],
+		},
+	},
+	default: '',
+	description: 'The name of the survey',
 },
 {
-  displayName: 'Segment ID',
-  name: 'segmentId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['segments'],
-      operation: ['getSegmentUsers'],
-    },
-  },
-  default: '',
-  description: 'The ID of the segment to get users for',
+	displayName: 'Survey Type',
+	name: 'surveyType',
+	type: 'options',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['createSurvey'],
+		},
+	},
+	options: [
+		{
+			name: 'NPS',
+			value: 'nps',
+		},
+		{
+			name: 'Feedback',
+			value: 'feedback',
+		},
+		{
+			name: 'Rating',
+			value: 'rating',
+		},
+	],
+	default: 'nps',
+	description: 'The type of survey to create',
 },
 {
-  displayName: 'Page',
-  name: 'page',
-  type: 'number',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['segments'],
-      operation: ['getSegmentUsers'],
-    },
-  },
-  default: 1,
-  description: 'Page number for pagination',
+	displayName: 'Questions',
+	name: 'questions',
+	type: 'json',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['createSurvey', 'updateSurvey'],
+		},
+	},
+	default: '[]',
+	description: 'Array of survey questions with their configuration',
 },
 {
-  displayName: 'Limit',
-  name: 'limit',
-  type: 'number',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['segments'],
-      operation: ['getSegmentUsers'],
-    },
-  },
-  default: 50,
-  description: 'Number of users to return per page',
+	displayName: 'Target Segment',
+	name: 'targetSegment',
+	type: 'string',
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['createSurvey'],
+		},
+	},
+	default: '',
+	description: 'The user segment to target for this survey',
 },
 {
-  displayName: 'Survey Type',
-  name: 'type',
-  type: 'options',
-  displayOptions: {
-    show: {
-      resource: ['surveys'],
-      operation: ['getAllSurveys'],
-    },
-  },
-  options: [
-    {
-      name: 'All',
-      value: '',
-    },
-    {
-      name: 'NPS',
-      value: 'nps',
-    },
-    {
-      name: 'CSAT',
-      value: 'csat',
-    },
-    {
-      name: 'Custom',
-      value: 'custom',
-    },
-  ],
-  default: '',
-  description: 'Filter surveys by type',
+	displayName: 'Start Date',
+	name: 'startDate',
+	type: 'dateTime',
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['getSurveyResponses'],
+		},
+	},
+	default: '',
+	description: 'Start date for filtering responses',
 },
 {
-  displayName: 'Status',
-  name: 'status',
-  type: 'options',
-  displayOptions: {
-    show: {
-      resource: ['surveys'],
-      operation: ['getAllSurveys'],
-    },
-  },
-  options: [
-    {
-      name: 'All',
-      value: '',
-    },
-    {
-      name: 'Active',
-      value: 'active',
-    },
-    {
-      name: 'Inactive',
-      value: 'inactive',
-    },
-    {
-      name: 'Draft',
-      value: 'draft',
-    },
-  ],
-  default: '',
-  description: 'Filter surveys by status',
+	displayName: 'End Date',
+	name: 'endDate',
+	type: 'dateTime',
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['getSurveyResponses'],
+		},
+	},
+	default: '',
+	description: 'End date for filtering responses',
 },
 {
-  displayName: 'Survey ID',
-  name: 'surveyId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['surveys'],
-      operation: ['getSurvey'],
-    },
-  },
-  default: '',
-  description: 'The ID of the survey to retrieve',
+	displayName: 'User ID',
+	name: 'userId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['survey'],
+			operation: ['triggerSurvey'],
+		},
+	},
+	default: '',
+	description: 'The ID of the user to trigger the survey for',
 },
 {
   displayName: 'Survey ID',
@@ -1064,7 +1334,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['surveys'],
+      resource: ['survey'],
       operation: ['createSurveyResponse'],
     },
   },
@@ -1078,7 +1348,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['surveys'],
+      resource: ['survey'],
       operation: ['createSurveyResponse'],
     },
   },
@@ -1092,7 +1362,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['surveys'],
+      resource: ['survey'],
       operation: ['createSurveyResponse'],
     },
   },
@@ -1106,60 +1376,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['surveys'],
-      operation: ['getSurveyResponses'],
-    },
-  },
-  default: '',
-  description: 'The ID of the survey to get responses for',
-},
-{
-  displayName: 'Date Range',
-  name: 'dateRange',
-  type: 'fixedCollection',
-  displayOptions: {
-    show: {
-      resource: ['surveys'],
-      operation: ['getSurveyResponses'],
-    },
-  },
-  default: {},
-  placeholder: 'Add Date Range',
-  typeOptions: {
-    multipleValues: false,
-  },
-  options: [
-    {
-      name: 'range',
-      displayName: 'Date Range',
-      values: [
-        {
-          displayName: 'Start Date',
-          name: 'startDate',
-          type: 'dateTime',
-          default: '',
-          description: 'Start date for filtering responses',
-        },
-        {
-          displayName: 'End Date',
-          name: 'endDate',
-          type: 'dateTime',
-          default: '',
-          description: 'End date for filtering responses',
-        },
-      ],
-    },
-  ],
-  description: 'Date range for filtering responses',
-},
-{
-  displayName: 'Survey ID',
-  name: 'surveyId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['surveys'],
+      resource: ['survey'],
       operation: ['getSurveyAnalytics'],
     },
   },
@@ -1172,7 +1389,7 @@ export class UserPilot implements INodeType {
   type: 'fixedCollection',
   displayOptions: {
     show: {
-      resource: ['surveys'],
+      resource: ['survey'],
       operation: ['getSurveyAnalytics'],
     },
   },
@@ -1212,7 +1429,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['surveys'],
+      resource: ['survey'],
       operation: ['updateSurveyStatus'],
     },
   },
@@ -1226,7 +1443,7 @@ export class UserPilot implements INodeType {
   required: true,
   displayOptions: {
     show: {
-      resource: ['surveys'],
+      resource: ['survey'],
       operation: ['updateSurveyStatus'],
     },
   },
@@ -1251,18 +1468,18 @@ export class UserPilot implements INodeType {
     const resource = this.getNodeParameter('resource', 0) as string;
 
     switch (resource) {
-      case 'users':
-        return [await executeUsersOperations.call(this, items)];
-      case 'unknown':
-        return [await executeunknownOperations.call(this, items)];
-      case 'flows':
-        return [await executeFlowsOperations.call(this, items)];
-      case 'checklists':
-        return [await executeChecklistsOperations.call(this, items)];
-      case 'segments':
-        return [await executeSegmentsOperations.call(this, items)];
-      case 'surveys':
-        return [await executeSurveysOperations.call(this, items)];
+      case 'user':
+        return [await executeUserOperations.call(this, items)];
+      case 'event':
+        return [await executeEventOperations.call(this, items)];
+      case 'flow':
+        return [await executeFlowOperations.call(this, items)];
+      case 'segment':
+        return [await executeSegmentOperations.call(this, items)];
+      case 'checklist':
+        return [await executeChecklistOperations.call(this, items)];
+      case 'survey':
+        return [await executeSurveyOperations.call(this, items)];
       default:
         throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not supported`);
     }
@@ -1273,7 +1490,184 @@ export class UserPilot implements INodeType {
 // Resource Handler Functions
 // ============================================================
 
-async function executeUsersOperations(
+async function executeUserOperations(
+	this: IExecuteFunctions,
+	items: INodeExecutionData[],
+): Promise<INodeExecutionData[]> {
+	const returnData: INodeExecutionData[] = [];
+	const operation = this.getNodeParameter('operation', 0) as string;
+	const credentials = await this.getCredentials('userpilotApi') as any;
+
+	for (let i = 0; i < items.length; i++) {
+		try {
+			let result: any;
+
+			switch (operation) {
+				case 'createUser': {
+					const userId = this.getNodeParameter('userId', i) as string;
+					const email = this.getNodeParameter('email', i) as string;
+					const name = this.getNodeParameter('name', i) as string;
+					const properties = this.getNodeParameter('properties', i) as string;
+
+					const body: any = {
+						user_id: userId,
+						email: email,
+					};
+
+					if (name) {
+						body.name = name;
+					}
+
+					if (properties) {
+						try {
+							body.properties = JSON.parse(properties);
+						} catch (error: any) {
+							throw new NodeOperationError(this.getNode(), 'Invalid JSON in properties field');
+						}
+					}
+
+					const options: any = {
+						method: 'POST',
+						url: `${credentials.baseUrl}/users`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						body: body,
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getUser': {
+					const userId = this.getNodeParameter('userId', i) as string;
+
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/users/${userId}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getUsers': {
+					const limit = this.getNodeParameter('limit', i) as number;
+					const offset = this.getNodeParameter('offset', i) as number;
+					const filters = this.getNodeParameter('filters', i) as string;
+
+					const qs: any = {
+						limit: limit,
+						offset: offset,
+					};
+
+					if (filters) {
+						try {
+							const parsedFilters = JSON.parse(filters);
+							Object.assign(qs, parsedFilters);
+						} catch (error: any) {
+							throw new NodeOperationError(this.getNode(), 'Invalid JSON in filters field');
+						}
+					}
+
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/users`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+						},
+						qs: qs,
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'updateUser': {
+					const userId = this.getNodeParameter('userId', i) as string;
+					const properties = this.getNodeParameter('properties', i) as string;
+
+					const body: any = {};
+
+					if (properties) {
+						try {
+							body.properties = JSON.parse(properties);
+						} catch (error: any) {
+							throw new NodeOperationError(this.getNode(), 'Invalid JSON in properties field');
+						}
+					}
+
+					const options: any = {
+						method: 'PUT',
+						url: `${credentials.baseUrl}/users/${userId}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						body: body,
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'deleteUser': {
+					const userId = this.getNodeParameter('userId', i) as string;
+
+					const options: any = {
+						method: 'DELETE',
+						url: `${credentials.baseUrl}/users/${userId}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				default:
+					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+			}
+
+			returnData.push({ json: result, pairedItem: { item: i } });
+		} catch (error: any) {
+			if (this.continueOnFail()) {
+				returnData.push({
+					json: { error: error.message },
+					pairedItem: { item: i },
+				});
+			} else {
+				if (error.httpCode === 401) {
+					throw new NodeApiError(this.getNode(), error, {
+						message: 'Invalid API credentials',
+						description: 'Please check your UserPilot API key',
+					});
+				}
+				if (error.httpCode === 404) {
+					throw new NodeApiError(this.getNode(), error, {
+						message: 'User not found',
+						description: 'The specified user does not exist',
+					});
+				}
+				throw error;
+			}
+		}
+	}
+
+	return returnData;
+}
+
+async function executeEventOperations(
   this: IExecuteFunctions,
   items: INodeExecutionData[],
 ): Promise<INodeExecutionData[]> {
@@ -1286,37 +1680,37 @@ async function executeUsersOperations(
       let result: any;
 
       switch (operation) {
-        case 'createUser': {
+        case 'createEvent': {
           const userId = this.getNodeParameter('userId', i) as string;
-          const email = this.getNodeParameter('email', i) as string;
-          const propertiesParam = this.getNodeParameter('properties', i) as string;
-          
-          let properties: any = {};
-          if (propertiesParam) {
-            try {
-              properties = typeof propertiesParam === 'string' ? JSON.parse(propertiesParam) : propertiesParam;
-            } catch (error: any) {
-              throw new NodeOperationError(this.getNode(), `Invalid JSON in properties: ${error.message}`);
-            }
-          }
+          const eventName = this.getNodeParameter('eventName', i) as string;
+          const properties = this.getNodeParameter('properties', i) as string;
+          const timestamp = this.getNodeParameter('timestamp', i) as string;
 
           const body: any = {
             user_id: userId,
-            properties: properties,
+            event_name: eventName,
           };
 
-          if (email) {
-            body.email = email;
+          if (properties) {
+            try {
+              body.properties = JSON.parse(properties);
+            } catch (error: any) {
+              throw new NodeOperationError(this.getNode(), 'Invalid JSON in properties field');
+            }
+          }
+
+          if (timestamp) {
+            body.timestamp = timestamp;
           }
 
           const options: any = {
             method: 'POST',
-            url: `${credentials.baseUrl}/users`,
+            url: `${credentials.baseUrl}/events`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
             },
-            body: body,
+            body,
             json: true,
           };
 
@@ -1324,49 +1718,29 @@ async function executeUsersOperations(
           break;
         }
 
-        case 'getUser': {
+        case 'getEvents': {
           const userId = this.getNodeParameter('userId', i) as string;
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/users/${encodeURIComponent(userId)}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getAllUsers': {
-          const page = this.getNodeParameter('page', i) as number;
+          const eventName = this.getNodeParameter('eventName', i) as string;
+          const startDate = this.getNodeParameter('startDate', i) as string;
+          const endDate = this.getNodeParameter('endDate', i) as string;
           const limit = this.getNodeParameter('limit', i) as number;
-          const filtersParam = this.getNodeParameter('filters', i) as string;
+          const offset = this.getNodeParameter('offset', i) as number;
 
-          let filters: any = {};
-          if (filtersParam) {
-            try {
-              filters = typeof filtersParam === 'string' ? JSON.parse(filtersParam) : filtersParam;
-            } catch (error: any) {
-              throw new NodeOperationError(this.getNode(), `Invalid JSON in filters: ${error.message}`);
-            }
-          }
+          const queryParams: any = {};
+          if (userId) queryParams.user_id = userId;
+          if (eventName) queryParams.event_name = eventName;
+          if (startDate) queryParams.start_date = startDate;
+          if (endDate) queryParams.end_date = endDate;
+          if (limit) queryParams.limit = limit;
+          if (offset) queryParams.offset = offset;
 
-          const queryParams: string[] = [];
-          if (page) queryParams.push(`page=${page}`);
-          if (limit) queryParams.push(`limit=${limit}`);
-
-          Object.keys(filters).forEach((key: string) => {
-            queryParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(filters[key])}`);
-          });
-
-          const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+          const queryString = Object.keys(queryParams).length > 0 
+            ? '?' + new URLSearchParams(queryParams).toString() 
+            : '';
 
           const options: any = {
             method: 'GET',
-            url: `${credentials.baseUrl}/users${queryString}`,
+            url: `${credentials.baseUrl}/events${queryString}`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
             },
@@ -1377,43 +1751,32 @@ async function executeUsersOperations(
           break;
         }
 
-        case 'updateUser': {
-          const userId = this.getNodeParameter('userId', i) as string;
-          const propertiesParam = this.getNodeParameter('properties', i) as string;
+        case 'createEventsBatch': {
+          const events = this.getNodeParameter('events', i) as string;
+          let eventsArray: any[];
 
-          let properties: any = {};
           try {
-            properties = typeof propertiesParam === 'string' ? JSON.parse(propertiesParam) : propertiesParam;
+            eventsArray = JSON.parse(events);
           } catch (error: any) {
-            throw new NodeOperationError(this.getNode(), `Invalid JSON in properties: ${error.message}`);
+            throw new NodeOperationError(this.getNode(), 'Invalid JSON in events field');
           }
 
+          if (!Array.isArray(eventsArray)) {
+            throw new NodeOperationError(this.getNode(), 'Events must be an array');
+          }
+
+          const body: any = {
+            events: eventsArray,
+          };
+
           const options: any = {
-            method: 'PUT',
-            url: `${credentials.baseUrl}/users/${encodeURIComponent(userId)}`,
+            method: 'POST',
+            url: `${credentials.baseUrl}/events/batch`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
             },
-            body: {
-              properties: properties,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'deleteUser': {
-          const userId = this.getNodeParameter('userId', i) as string;
-
-          const options: any = {
-            method: 'DELETE',
-            url: `${credentials.baseUrl}/users/${encodeURIComponent(userId)}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-            },
+            body,
             json: true,
           };
 
@@ -1431,18 +1794,6 @@ async function executeUsersOperations(
       if (this.continueOnFail()) {
         returnData.push({ json: { error: error.message }, pairedItem: { item: i } });
       } else {
-        if (error.httpCode === 401) {
-          throw new NodeApiError(this.getNode(), error, {
-            message: 'Invalid API credentials',
-            description: 'Please check your UserPilot API key',
-          });
-        }
-        if (error.httpCode === 404) {
-          throw new NodeApiError(this.getNode(), error, {
-            message: 'User not found',
-            description: 'The specified user does not exist',
-          });
-        }
         throw error;
       }
     }
@@ -1451,108 +1802,107 @@ async function executeUsersOperations(
   return returnData;
 }
 
-// PARSE ERROR for unknown — manual fix needed
-// Raw: // No additional imports
-
-{
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['events'],
-    },
-  },
-  options: [
-    {
-      name: 'Create Event',
-      value: 'createEvent',
-      description: 'Track a cus
-
-async function executeFlowsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
+async function executeFlowOperations(
+	this: IExecuteFunctions,
+	items: INodeExecutionData[],
 ): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('userpilotApi') as any;
+	const returnData: INodeExecutionData[] = [];
+	const operation = this.getNodeParameter('operation', 0) as string;
+	const credentials = await this.getCredentials('userpilotApi') as any;
 
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
+	for (let i = 0; i < items.length; i++) {
+		try {
+			let result: any;
 
-      switch (operation) {
-        case 'getAllFlows': {
-          const status = this.getNodeParameter('status', i) as string;
-          const type = this.getNodeParameter('type', i) as string;
+			switch (operation) {
+				case 'getFlows': {
+					const limit = this.getNodeParameter('limit', i) as number;
+					const offset = this.getNodeParameter('offset', i) as number;
+					const status = this.getNodeParameter('status', i) as string;
 
-          const queryParams: string[] = [];
-          if (status) queryParams.push(`status=${status}`);
-          if (type) queryParams.push(`type=${type}`);
-          const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+					const queryParams = new URLSearchParams();
+					if (limit) queryParams.append('limit', limit.toString());
+					if (offset) queryParams.append('offset', offset.toString());
+					if (status) queryParams.append('status', status);
 
-          const options: any = {
-            method: 'GET',
-            url: `https://api.userpilot.com/v1/flows${queryString}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
+					const url = `${credentials.baseUrl}/flows${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
 
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					const options: any = {
+						method: 'GET',
+						url,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
 
-        case 'getFlow': {
-          const flowId = this.getNodeParameter('flowId', i) as string;
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-          const options: any = {
-            method: 'GET',
-            url: `https://api.userpilot.com/v1/flows/${flowId}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
+				case 'getFlow': {
+					const flowId = this.getNodeParameter('flowId', i) as string;
 
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/flows/${flowId}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
 
-        case 'triggerFlow': {
-          const flowId = this.getNodeParameter('flowId', i) as string;
-          const userId = this.getNodeParameter('userId', i) as string;
-          const userEmail = this.getNodeParameter('userEmail', i) as string;
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-          if (!userId && !userEmail) {
-            throw new NodeOperationError(
-              this.getNode(),
-              'Either User ID or User Email must be provided'
-            );
-          }
+				case 'triggerFlow': {
+					const flowId = this.getNodeParameter('flowId', i) as string;
+					const userId = this.getNodeParameter('userId', i) as string;
 
-          const body: any = {};
-          if (userId) body.user_id = userId;
-          if (userEmail) body.email = userEmail;
+					const options: any = {
+						method: 'POST',
+						url: `${credentials.baseUrl}/flows/${flowId}/trigger`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						body: {
+							user_id: userId,
+						},
+						json: true,
+					};
 
-          const options: any = {
-            method: 'POST',
-            url: `https://api.userpilot.com/v1/flows/${flowId}/trigger`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+				case 'getFlowStats': {
+					const flowId = this.getNodeParameter('flowId', i) as string;
+					const startDate = this.getNodeParameter('startDate', i) as string;
+					const endDate = this.getNodeParameter('endDate', i) as string;
+
+					const queryParams = new URLSearchParams();
+					if (startDate) queryParams.append('start_date', startDate);
+					if (endDate) queryParams.append('end_date', endDate);
+
+					const url = `${credentials.baseUrl}/flows/${flowId}/stats${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+
+					const options: any = {
+						method: 'GET',
+						url,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
         case 'getFlowAnalytics': {
           const flowId = this.getNodeParameter('flowId', i) as string;
@@ -1560,7 +1910,7 @@ async function executeFlowsOperations(
 
           const options: any = {
             method: 'GET',
-            url: `https://api.userpilot.com/v1/flows/${flowId}/analytics?date_range=${dateRange}`,
+            url: `${credentials.baseUrl}/flows/${flowId}/analytics?date_range=${dateRange}`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
@@ -1578,7 +1928,7 @@ async function executeFlowsOperations(
 
           const options: any = {
             method: 'PUT',
-            url: `https://api.userpilot.com/v1/flows/${flowId}/status`,
+            url: `${credentials.baseUrl}/flows/${flowId}/status`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
@@ -1593,510 +1943,191 @@ async function executeFlowsOperations(
           break;
         }
 
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
+				default:
+					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+			}
 
-      returnData.push({
-        json: result,
-        pairedItem: { item: i },
-      });
-
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
+			returnData.push({
+				json: result,
+				pairedItem: { item: i },
+			});
+		} catch (error: any) {
+			if (this.continueOnFail()) {
+				returnData.push({
+					json: { error: error.message },
+					pairedItem: { item: i },
+				});
+			} else {
         if (error.httpCode) {
           throw new NodeApiError(this.getNode(), error);
         }
         throw new NodeOperationError(this.getNode(), error.message);
-      }
-    }
-  }
+			}
+		}
+	}
 
-  return returnData;
+	return returnData;
 }
 
-async function executeChecklistsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
+async function executeSegmentOperations(
+	this: IExecuteFunctions,
+	items: INodeExecutionData[],
 ): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('userpilotApi') as any;
+	const returnData: INodeExecutionData[] = [];
+	const operation = this.getNodeParameter('operation', 0) as string;
+	const credentials = await this.getCredentials('userpilotApi') as any;
 
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
+	for (let i = 0; i < items.length; i++) {
+		try {
+			let result: any;
 
-      switch (operation) {
-        case 'getAllChecklists': {
-          const status = this.getNodeParameter('status', i) as string;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/checklists`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            qs: {},
-            json: true,
-          };
+			switch (operation) {
+				case 'getSegments': {
+					const limit = this.getNodeParameter('limit', i) as number;
+					const offset = this.getNodeParameter('offset', i) as number;
 
-          if (status) {
-            options.qs.status = status;
-          }
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/segments`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						qs: {
+							limit,
+							offset,
+						},
+						json: true,
+					};
 
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-        case 'getChecklist': {
-          const checklistId = this.getNodeParameter('checklistId', i) as string;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/checklists/${checklistId}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
+				case 'getSegment': {
+					const segmentId = this.getNodeParameter('segmentId', i) as string;
 
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/segments/${segmentId}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
 
-        case 'completeChecklistItem': {
-          const checklistId = this.getNodeParameter('checklistId', i) as string;
-          const itemId = this.getNodeParameter('itemId', i) as string;
-          const userIdentification = this.getNodeParameter('userIdentification', i) as string;
-          
-          const body: any = {};
-          
-          if (userIdentification === 'userId') {
-            body.user_id = this.getNodeParameter('userId', i) as string;
-          } else {
-            body.email = this.getNodeParameter('email', i) as string;
-          }
-          
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}/checklists/${checklistId}/items/${itemId}/complete`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+				case 'createSegment': {
+					const name = this.getNodeParameter('name', i) as string;
+					const conditions = this.getNodeParameter('conditions', i) as object;
+					const description = this.getNodeParameter('description', i) as string;
 
-        case 'getChecklistProgress': {
-          const checklistId = this.getNodeParameter('checklistId', i) as string;
-          const userIdentification = this.getNodeParameter('userIdentification', i) as string;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/checklists/${checklistId}/progress`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            qs: {},
-            json: true,
-          };
+					const body: any = {
+						name,
+						conditions,
+					};
 
-          if (userIdentification === 'userId') {
-            options.qs.user_id = this.getNodeParameter('userId', i) as string;
-          } else {
-            options.qs.email = this.getNodeParameter('email', i) as string;
-          }
+					if (description) {
+						body.description = description;
+					}
 
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					const options: any = {
+						method: 'POST',
+						url: `${credentials.baseUrl}/segments`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						body,
+						json: true,
+					};
 
-        case 'updateChecklistStatus': {
-          const checklistId = this.getNodeParameter('checklistId', i) as string;
-          const status = this.getNodeParameter('status', i) as string;
-          
-          const options: any = {
-            method: 'PUT',
-            url: `${credentials.baseUrl}/checklists/${checklistId}/status`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: {
-              status,
-            },
-            json: true,
-          };
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+				case 'updateSegment': {
+					const segmentId = this.getNodeParameter('segmentId', i) as string;
+					const name = this.getNodeParameter('name', i) as string;
+					const conditions = this.getNodeParameter('conditions', i) as object;
 
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
+					const body: any = {};
 
-      returnData.push({
-        json: result,
-        pairedItem: { item: i },
-      });
+					if (name) {
+						body.name = name;
+					}
 
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
-    }
-  }
+					if (conditions && Object.keys(conditions).length > 0) {
+						body.conditions = conditions;
+					}
 
-  return returnData;
-}
+					const options: any = {
+						method: 'PUT',
+						url: `${credentials.baseUrl}/segments/${segmentId}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						body,
+						json: true,
+					};
 
-async function executeSegmentsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('userpilotApi') as any;
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
+				case 'deleteSegment': {
+					const segmentId = this.getNodeParameter('segmentId', i) as string;
 
-      switch (operation) {
-        case 'getAllSegments': {
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					const options: any = {
+						method: 'DELETE',
+						url: `${credentials.baseUrl}/segments/${segmentId}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
 
-        case 'getSegment': {
-          const segmentId = this.getNodeParameter('segmentId', i) as string;
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments/${segmentId}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-        case 'createSegment': {
-          const name = this.getNodeParameter('name', i) as string;
-          const criteria = this.getNodeParameter('criteria', i) as any;
-          const description = this.getNodeParameter('description', i) as string;
+				case 'getSegmentUsers': {
+					const segmentId = this.getNodeParameter('segmentId', i) as string;
+					const limit = this.getNodeParameter('limit', i) as number;
+					const offset = this.getNodeParameter('offset', i) as number;
 
-          const body: any = {
-            name,
-            criteria: typeof criteria === 'string' ? JSON.parse(criteria) : criteria,
-          };
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/segments/${segmentId}/users`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						qs: {
+							limit,
+							offset,
+						},
+						json: true,
+					};
 
-          if (description) {
-            body.description = description;
-          }
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+				default:
+					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+			}
 
-        case 'updateSegment': {
-          const segmentId = this.getNodeParameter('segmentId', i) as string;
-          const criteria = this.getNodeParameter('criteria', i) as any;
-
-          const body: any = {
-            criteria: typeof criteria === 'string' ? JSON.parse(criteria) : criteria,
-          };
-
-          const options: any = {
-            method: 'PUT',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments/${segmentId}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getSegmentUsers': {
-          const segmentId = this.getNodeParameter('segmentId', i) as string;
-          const page = this.getNodeParameter('page', i) as number;
-          const limit = this.getNodeParameter('limit', i) as number;
-
-          const qs: any = {};
-          if (page) qs.page = page;
-          if (limit) qs.limit = limit;
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/segments/${segmentId}/users`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            qs,
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({
-        json: result,
-        pairedItem: { item: i },
-      });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
-    }
-  }
-
-  return returnData;
-}
-
-async function executeSurveysOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('userpilotApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-
-      switch (operation) {
-        case 'getAllSurveys': {
-          const type = this.getNodeParameter('type', i) as string;
-          const status = this.getNodeParameter('status', i) as string;
-
-          const qs: any = {};
-          if (type) qs.type = type;
-          if (status) qs.status = status;
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            qs,
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getSurvey': {
-          const surveyId = this.getNodeParameter('surveyId', i) as string;
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'createSurveyResponse': {
-          const surveyId = this.getNodeParameter('surveyId', i) as string;
-          const userId = this.getNodeParameter('userId', i) as string;
-          const answersInput = this.getNodeParameter('answers', i) as string;
-
-          let answers: any;
-          try {
-            answers = typeof answersInput === 'string' ? JSON.parse(answersInput) : answersInput;
-          } catch (error: any) {
-            throw new NodeOperationError(this.getNode(), 'Invalid JSON format for answers parameter');
-          }
-
-          const body: any = {
-            user_id: userId,
-            answers: answers,
-          };
-
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}/responses`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getSurveyResponses': {
-          const surveyId = this.getNodeParameter('surveyId', i) as string;
-          const dateRange = this.getNodeParameter('dateRange', i) as any;
-
-          const qs: any = {};
-          if (dateRange && dateRange.range) {
-            if (dateRange.range.startDate) {
-              qs.start_date = new Date(dateRange.range.startDate).toISOString();
-            }
-            if (dateRange.range.endDate) {
-              qs.end_date = new Date(dateRange.range.endDate).toISOString();
-            }
-          }
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}/responses`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            qs,
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getSurveyAnalytics': {
-          const surveyId = this.getNodeParameter('surveyId', i) as string;
-          const dateRange = this.getNodeParameter('dateRange', i) as any;
-
-          const qs: any = {};
-          if (dateRange && dateRange.range) {
-            if (dateRange.range.startDate) {
-              qs.start_date = new Date(dateRange.range.startDate).toISOString();
-            }
-            if (dateRange.range.endDate) {
-              qs.end_date = new Date(dateRange.range.endDate).toISOString();
-            }
-          }
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}/analytics`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            qs,
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'updateSurveyStatus': {
-          const surveyId = this.getNodeParameter('surveyId', i) as string;
-          const status = this.getNodeParameter('status', i) as string;
-
-          const body: any = {
-            status: status,
-          };
-
-          const options: any = {
-            method: 'PUT',
-            url: `${credentials.baseUrl || 'https://api.userpilot.com/v1'}/surveys/${surveyId}/status`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ 
-          json: { error: error.message }, 
-          pairedItem: { item: i } 
-        });
-      } else {
-        if (error.response && error.response.body) {
-          const errorMessage = error.response.body.message || error.response.body.error || error.message;
-          throw new NodeApiError(this.getNode(), error.response.body, { 
-            message: errorMessage,
-            httpCode: error.response.statusCode?.toString() 
-          });
-        }
-        throw error;
-      }
-    }
-  }
-
-  return returnData;
-}
+			returnData.push({
+				json: result,
+				pairedItem: { item: i },
+			});
+		} catch (error: any) {
+			if (this.continueOnFail()) {
+				returnData.
