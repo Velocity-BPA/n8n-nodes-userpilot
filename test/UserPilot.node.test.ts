@@ -67,1203 +67,857 @@ describe('UserPilot Node', () => {
   });
 
   // Resource-specific tests
-describe('Users Resource', () => {
-  let mockExecuteFunctions: any;
+describe('User Resource', () => {
+	let mockExecuteFunctions: any;
 
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.userpilot.com/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://api.userpilot.com/v1',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn(),
+			},
+		};
+	});
 
-  describe('createUser', () => {
-    it('should create a user successfully', async () => {
-      const expectedResponse = { id: 'user123', email: 'test@example.com', created: true };
-      
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'createUser';
-          case 'userId': return 'user123';
-          case 'email': return 'test@example.com';
-          case 'properties': return '{"name": "John Doe"}';
-          default: return undefined;
-        }
-      });
+	describe('createUser', () => {
+		it('should create a user successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('createUser')
+				.mockReturnValueOnce('user123')
+				.mockReturnValueOnce('test@example.com')
+				.mockReturnValueOnce('John Doe')
+				.mockReturnValueOnce('{"role": "admin"}');
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(expectedResponse);
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ id: 'user123', email: 'test@example.com' });
 
-      const items = [{ json: {} }];
-      const result = await executeUsersOperations.call(mockExecuteFunctions, items);
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      expect(result).toEqual([{ json: expectedResponse, pairedItem: { item: 0 } }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'POST',
-        url: 'https://api.userpilot.com/v1/users',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        body: {
-          user_id: 'user123',
-          email: 'test@example.com',
-          properties: { name: 'John Doe' },
-        },
-        json: true,
-      });
-    });
+			expect(result).toHaveLength(1);
+			expect(result[0].json).toEqual({ id: 'user123', email: 'test@example.com' });
+		});
 
-    it('should handle invalid JSON in properties', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'createUser';
-          case 'userId': return 'user123';
-          case 'properties': return 'invalid json';
-          default: return undefined;
-        }
-      });
+		it('should handle createUser error', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('createUser')
+				.mockReturnValueOnce('user123')
+				.mockReturnValueOnce('test@example.com')
+				.mockReturnValueOnce('John Doe')
+				.mockReturnValueOnce('{}');
 
-      const items = [{ json: {} }];
-      
-      await expect(executeUsersOperations.call(mockExecuteFunctions, items)).rejects.toThrow('Invalid JSON in properties');
-    });
-  });
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
-  describe('getUser', () => {
-    it('should retrieve a user successfully', async () => {
-      const expectedResponse = { id: 'user123', email: 'test@example.com', properties: {} };
-      
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'getUser';
-          case 'userId': return 'user123';
-          default: return undefined;
-        }
-      });
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(expectedResponse);
+			expect(result).toHaveLength(1);
+			expect(result[0].json.error).toBe('API Error');
+		});
+	});
 
-      const items = [{ json: {} }];
-      const result = await executeUsersOperations.call(mockExecuteFunctions, items);
+	describe('getUser', () => {
+		it('should get a user successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getUser')
+				.mockReturnValueOnce('user123');
 
-      expect(result).toEqual([{ json: expectedResponse, pairedItem: { item: 0 } }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://api.userpilot.com/v1/users/user123',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-        },
-        json: true,
-      });
-    });
-  });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ id: 'user123', email: 'test@example.com' });
 
-  describe('getAllUsers', () => {
-    it('should retrieve all users with pagination', async () => {
-      const expectedResponse = { users: [], total: 0, page: 1, limit: 50 };
-      
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'getAllUsers';
-          case 'page': return 1;
-          case 'limit': return 50;
-          case 'filters': return '{}';
-          default: return undefined;
-        }
-      });
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(expectedResponse);
+			expect(result).toHaveLength(1);
+			expect(result[0].json).toEqual({ id: 'user123', email: 'test@example.com' });
+		});
 
-      const items = [{ json: {} }];
-      const result = await executeUsersOperations.call(mockExecuteFunctions, items);
+		it('should handle getUser error', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getUser')
+				.mockReturnValueOnce('user123');
 
-      expect(result).toEqual([{ json: expectedResponse, pairedItem: { item: 0 } }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://api.userpilot.com/v1/users?page=1&limit=50',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-        },
-        json: true,
-      });
-    });
-  });
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('User not found'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
-  describe('updateUser', () => {
-    it('should update a user successfully', async () => {
-      const expectedResponse = { id: 'user123', updated: true };
-      
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'updateUser';
-          case 'userId': return 'user123';
-          case 'properties': return '{"name": "Jane Doe"}';
-          default: return undefined;
-        }
-      });
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(expectedResponse);
+			expect(result).toHaveLength(1);
+			expect(result[0].json.error).toBe('User not found');
+		});
+	});
 
-      const items = [{ json: {} }];
-      const result = await executeUsersOperations.call(mockExecuteFunctions, items);
+	describe('getUsers', () => {
+		it('should get users successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getUsers')
+				.mockReturnValueOnce(10)
+				.mockReturnValueOnce(0)
+				.mockReturnValueOnce('{"status": "active"}');
 
-      expect(result).toEqual([{ json: expectedResponse, pairedItem: { item: 0 } }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'PUT',
-        url: 'https://api.userpilot.com/v1/users/user123',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        body: {
-          properties: { name: 'Jane Doe' },
-        },
-        json: true,
-      });
-    });
-  });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ users: [{ id: 'user123' }], total: 1 });
 
-  describe('deleteUser', () => {
-    it('should delete a user successfully', async () => {
-      const expectedResponse = { success: true };
-      
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'deleteUser';
-          case 'userId': return 'user123';
-          default: return undefined;
-        }
-      });
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(expectedResponse);
+			expect(result).toHaveLength(1);
+			expect(result[0].json).toEqual({ users: [{ id: 'user123' }], total: 1 });
+		});
 
-      const items = [{ json: {} }];
-      const result = await executeUsersOperations.call(mockExecuteFunctions, items);
+		it('should handle getUsers error', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getUsers')
+				.mockReturnValueOnce(10)
+				.mockReturnValueOnce(0)
+				.mockReturnValueOnce('{}');
 
-      expect(result).toEqual([{ json: expectedResponse, pairedItem: { item: 0 } }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'DELETE',
-        url: 'https://api.userpilot.com/v1/users/user123',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-        },
-        json: true,
-      });
-    });
-  });
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
-  describe('error handling', () => {
-    it('should handle 401 unauthorized error', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'getUser';
-          case 'userId': return 'user123';
-          default: return undefined;
-        }
-      });
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      const error = new Error('Unauthorized');
-      (error as any).httpCode = 401;
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(error);
+			expect(result).toHaveLength(1);
+			expect(result[0].json.error).toBe('API Error');
+		});
+	});
 
-      const items = [{ json: {} }];
-      
-      await expect(executeUsersOperations.call(mockExecuteFunctions, items)).rejects.toThrow('Unauthorized');
-    });
+	describe('updateUser', () => {
+		it('should update a user successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('updateUser')
+				.mockReturnValueOnce('user123')
+				.mockReturnValueOnce('{"name": "Jane Doe"}');
 
-    it('should continue on fail when configured', async () => {
-      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'getUser';
-          case 'userId': return 'user123';
-          default: return undefined;
-        }
-      });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ id: 'user123', name: 'Jane Doe' });
 
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      const items = [{ json: {} }];
-      const result = await executeUsersOperations.call(mockExecuteFunctions, items);
+			expect(result).toHaveLength(1);
+			expect(result[0].json).toEqual({ id: 'user123', name: 'Jane Doe' });
+		});
 
-      expect(result).toEqual([{ json: { error: 'API Error' }, pairedItem: { item: 0 } }]);
-    });
-  });
+		it('should handle updateUser error', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('updateUser')
+				.mockReturnValueOnce('user123')
+				.mockReturnValueOnce('{}');
+
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('Update failed'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].json.error).toBe('Update failed');
+		});
+	});
+
+	describe('deleteUser', () => {
+		it('should delete a user successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('deleteUser')
+				.mockReturnValueOnce('user123');
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ success: true });
+
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].json).toEqual({ success: true });
+		});
+
+		it('should handle deleteUser error', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('deleteUser')
+				.mockReturnValueOnce('user123');
+
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('Delete failed'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+			const result = await executeUserOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].json.error).toBe('Delete failed');
+		});
+	});
 });
 
-describe('Flows Resource', () => {
+describe('Event Resource', () => {
   let mockExecuteFunctions: any;
 
   beforeEach(() => {
     mockExecuteFunctions = {
       getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.userpilot.com/v1',
+      getCredentials: jest.fn().mockResolvedValue({ 
+        apiKey: 'test-key', 
+        baseUrl: 'https://api.userpilot.com/v1' 
       }),
       getInputData: jest.fn().mockReturnValue([{ json: {} }]),
       getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
       continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
+      helpers: { 
         httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
+        requestWithAuthentication: jest.fn() 
       },
     };
   });
 
-  describe('getAllFlows', () => {
-    it('should retrieve all flows successfully', async () => {
-      const mockResponse = {
-        flows: [
-          { id: 'flow1', name: 'Onboarding Flow', status: 'active' },
-          { id: 'flow2', name: 'Feature Tour', status: 'inactive' }
-        ]
-      };
+  describe('createEvent operation', () => {
+    it('should create an event successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('createEvent')
+        .mockReturnValueOnce('user123')
+        .mockReturnValueOnce('page_view')
+        .mockReturnValueOnce('{"page": "/dashboard"}')
+        .mockReturnValueOnce('2023-01-01T00:00:00Z');
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string, index: number) => {
-        switch (param) {
-          case 'operation': return 'getAllFlows';
-          case 'status': return 'active';
-          case 'type': return '';
-          default: return '';
-        }
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ 
+        success: true, 
+        event_id: 'evt_123' 
       });
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeFlowsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      const result = await executeEventOperations.call(
+        mockExecuteFunctions, 
+        [{ json: {} }]
+      );
 
       expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://api.userpilot.com/v1/flows?status=active',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        json: true,
-      });
+      expect(result[0].json).toEqual({ success: true, event_id: 'evt_123' });
     });
 
-    it('should handle errors when retrieving flows', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        if (param === 'operation') return 'getAllFlows';
-        return '';
-      });
-
+    it('should handle createEvent error', async () => {
+      mockExecuteFunctions.getNodeParameter.mockReturnValue('createEvent');
       mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
       mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
-      const result = await executeFlowsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      const result = await executeEventOperations.call(
+        mockExecuteFunctions, 
+        [{ json: {} }]
+      );
 
-      expect(result).toHaveLength(1);
       expect(result[0].json.error).toBe('API Error');
     });
   });
 
-  describe('getFlow', () => {
-    it('should retrieve a specific flow successfully', async () => {
-      const mockResponse = {
-        id: 'flow123',
-        name: 'Test Flow',
-        status: 'active',
-        configuration: {}
-      };
+  describe('getEvents operation', () => {
+    it('should get events successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('getEvents')
+        .mockReturnValueOnce('user123')
+        .mockReturnValueOnce('page_view')
+        .mockReturnValueOnce('')
+        .mockReturnValueOnce('')
+        .mockReturnValueOnce(50)
+        .mockReturnValueOnce(0);
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getFlow';
-          case 'flowId': return 'flow123';
-          default: return '';
-        }
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+        events: [{ id: 'evt_1', name: 'page_view' }],
+        total: 1
       });
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeFlowsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      const result = await executeEventOperations.call(
+        mockExecuteFunctions, 
+        [{ json: {} }]
+      );
 
       expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://api.userpilot.com/v1/flows/flow123',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        json: true,
-      });
+      expect(result[0].json.events).toHaveLength(1);
     });
   });
 
-  describe('triggerFlow', () => {
-    it('should trigger a flow for a user successfully', async () => {
-      const mockResponse = { success: true, message: 'Flow triggered' };
+  describe('createEventsBatch operation', () => {
+    it('should create events batch successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('createEventsBatch')
+        .mockReturnValueOnce('[{"user_id": "user123", "event_name": "click"}]');
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'triggerFlow';
-          case 'flowId': return 'flow123';
-          case 'userId': return 'user456';
-          case 'userEmail': return '';
-          default: return '';
-        }
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+        success: true,
+        created_count: 1
       });
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeFlowsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      const result = await executeEventOperations.call(
+        mockExecuteFunctions, 
+        [{ json: {} }]
+      );
 
       expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'POST',
-        url: 'https://api.userpilot.com/v1/flows/flow123/trigger',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        body: { user_id: 'user456' },
-        json: true,
-      });
+      expect(result[0].json.created_count).toBe(1);
     });
 
-    it('should throw error when no user identifier provided', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'triggerFlow';
-          case 'flowId': return 'flow123';
-          case 'userId': return '';
-          case 'userEmail': return '';
-          default: return '';
-        }
-      });
+    it('should handle invalid JSON in events', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('createEventsBatch')
+        .mockReturnValueOnce('invalid json');
 
-      await expect(executeFlowsOperations.call(mockExecuteFunctions, [{ json: {} }]))
-        .rejects.toThrow('Either User ID or User Email must be provided');
-    });
-  });
-
-  describe('getFlowAnalytics', () => {
-    it('should retrieve flow analytics successfully', async () => {
-      const mockResponse = {
-        views: 100,
-        completions: 75,
-        completion_rate: 0.75,
-        metrics: {}
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getFlowAnalytics';
-          case 'flowId': return 'flow123';
-          case 'dateRange': return '30d';
-          default: return '';
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeFlowsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://api.userpilot.com/v1/flows/flow123/analytics?date_range=30d',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        json: true,
-      });
-    });
-  });
-
-  describe('updateFlowStatus', () => {
-    it('should update flow status successfully', async () => {
-      const mockResponse = { success: true, status: 'active' };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'updateFlowStatus';
-          case 'flowId': return 'flow123';
-          case 'newStatus': return 'active';
-          default: return '';
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeFlowsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'PUT',
-        url: 'https://api.userpilot.com/v1/flows/flow123/status',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        body: { status: 'active' },
-        json: true,
-      });
+      await expect(executeEventOperations.call(
+        mockExecuteFunctions, 
+        [{ json: {} }]
+      )).rejects.toThrow('Invalid JSON in events field');
     });
   });
 });
 
-describe('Checklists Resource', () => {
-  let mockExecuteFunctions: any;
+describe('Flow Resource', () => {
+	let mockExecuteFunctions: any;
 
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.userpilot.com/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-api-key',
+				baseUrl: 'https://api.userpilot.com/v1',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn(),
+			},
+		};
+	});
 
-  describe('getAllChecklists', () => {
-    it('should get all checklists successfully', async () => {
-      const mockResponse = {
-        checklists: [
-          { id: 'checklist1', name: 'Onboarding', status: 'active' },
-          { id: 'checklist2', name: 'Setup', status: 'active' }
-        ]
-      };
+	test('should get flows successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getFlows')
+			.mockReturnValueOnce(10)
+			.mockReturnValueOnce(0)
+			.mockReturnValueOnce('active');
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        if (paramName === 'operation') return 'getAllChecklists';
-        if (paramName === 'status') return '';
-        return '';
-      });
+		const mockResponse = { flows: [{ id: 1, name: 'Test Flow' }] };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		const result = await executeFlowOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      const result = await executeChecklistsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+		expect(result).toEqual([{
+			json: mockResponse,
+			pairedItem: { item: 0 },
+		}]);
+		expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+			method: 'GET',
+			url: 'https://api.userpilot.com/v1/flows?limit=10&offset=0&status=active',
+			headers: {
+				'Authorization': 'Bearer test-api-key',
+				'Content-Type': 'application/json',
+			},
+			json: true,
+		});
+	});
 
-      expect(result).toEqual([{
-        json: mockResponse,
-        pairedItem: { item: 0 },
-      }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://api.userpilot.com/v1/checklists',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        qs: {},
-        json: true,
-      });
-    });
+	test('should get flow by ID successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getFlow')
+			.mockReturnValueOnce('flow123');
 
-    it('should handle getAllChecklists error', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        if (paramName === 'operation') return 'getAllChecklists';
-        return '';
-      });
+		const mockResponse = { id: 'flow123', name: 'Test Flow' };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+		const result = await executeFlowOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      await expect(executeChecklistsOperations.call(mockExecuteFunctions, [{ json: {} }]))
-        .rejects.toThrow();
-    });
-  });
+		expect(result).toEqual([{
+			json: mockResponse,
+			pairedItem: { item: 0 },
+		}]);
+	});
 
-  describe('getChecklist', () => {
-    it('should get a specific checklist successfully', async () => {
-      const mockResponse = {
-        id: 'checklist1',
-        name: 'Onboarding',
-        items: [
-          { id: 'item1', title: 'Complete profile', completed: false }
-        ]
-      };
+	test('should trigger flow successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('triggerFlow')
+			.mockReturnValueOnce('flow123')
+			.mockReturnValueOnce('user456');
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        if (paramName === 'operation') return 'getChecklist';
-        if (paramName === 'checklistId') return 'checklist1';
-        return '';
-      });
+		const mockResponse = { success: true, message: 'Flow triggered' };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		const result = await executeFlowOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      const result = await executeChecklistsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+		expect(result).toEqual([{
+			json: mockResponse,
+			pairedItem: { item: 0 },
+		}]);
+		expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+			method: 'POST',
+			url: 'https://api.userpilot.com/v1/flows/flow123/trigger',
+			headers: {
+				'Authorization': 'Bearer test-api-key',
+				'Content-Type': 'application/json',
+			},
+			body: {
+				user_id: 'user456',
+			},
+			json: true,
+		});
+	});
 
-      expect(result).toEqual([{
-        json: mockResponse,
-        pairedItem: { item: 0 },
-      }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://api.userpilot.com/v1/checklists/checklist1',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        json: true,
-      });
-    });
-  });
+	test('should get flow stats successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getFlowStats')
+			.mockReturnValueOnce('flow123')
+			.mockReturnValueOnce('2023-01-01')
+			.mockReturnValueOnce('2023-12-31');
 
-  describe('completeChecklistItem', () => {
-    it('should complete checklist item successfully', async () => {
-      const mockResponse = { success: true };
+		const mockResponse = { views: 100, completions: 80 };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        if (paramName === 'operation') return 'completeChecklistItem';
-        if (paramName === 'checklistId') return 'checklist1';
-        if (paramName === 'itemId') return 'item1';
-        if (paramName === 'userIdentification') return 'userId';
-        if (paramName === 'userId') return 'user123';
-        return '';
-      });
+		const result = await executeFlowOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		expect(result).toEqual([{
+			json: mockResponse,
+			pairedItem: { item: 0 },
+		}]);
+	});
 
-      const result = await executeChecklistsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+	test('should handle errors gracefully when continueOnFail is true', async () => {
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('getFlows');
+		mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+		mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
 
-      expect(result).toEqual([{
-        json: mockResponse,
-        pairedItem: { item: 0 },
-      }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'POST',
-        url: 'https://api.userpilot.com/v1/checklists/checklist1/items/item1/complete',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        body: {
-          user_id: 'user123',
-        },
-        json: true,
-      });
-    });
-  });
+		const result = await executeFlowOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-  describe('getChecklistProgress', () => {
-    it('should get checklist progress successfully', async () => {
-      const mockResponse = {
-        checklist_id: 'checklist1',
-        user_id: 'user123',
-        progress: 50,
-        completed_items: 2,
-        total_items: 4
-      };
+		expect(result).toEqual([{
+			json: { error: 'API Error' },
+			pairedItem: { item: 0 },
+		}]);
+	});
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        if (paramName === 'operation') return 'getChecklistProgress';
-        if (paramName === 'checklistId') return 'checklist1';
-        if (paramName === 'userIdentification') return 'userId';
-        if (paramName === 'userId') return 'user123';
-        return '';
-      });
+	test('should throw error when continueOnFail is false', async () => {
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('getFlows');
+		mockExecuteFunctions.continueOnFail.mockReturnValue(false);
+		mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeChecklistsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toEqual([{
-        json: mockResponse,
-        pairedItem: { item: 0 },
-      }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://api.userpilot.com/v1/checklists/checklist1/progress',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        qs: {
-          user_id: 'user123',
-        },
-        json: true,
-      });
-    });
-  });
-
-  describe('updateChecklistStatus', () => {
-    it('should update checklist status successfully', async () => {
-      const mockResponse = { success: true, status: 'inactive' };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        if (paramName === 'operation') return 'updateChecklistStatus';
-        if (paramName === 'checklistId') return 'checklist1';
-        if (paramName === 'status') return 'inactive';
-        return '';
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeChecklistsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toEqual([{
-        json: mockResponse,
-        pairedItem: { item: 0 },
-      }]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'PUT',
-        url: 'https://api.userpilot.com/v1/checklists/checklist1/status',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        body: {
-          status: 'inactive',
-        },
-        json: true,
-      });
-    });
-  });
+		await expect(executeFlowOperations.call(mockExecuteFunctions, [{ json: {} }]))
+			.rejects.toThrow('API Error');
+	});
 });
 
-describe('Segments Resource', () => {
-  let mockExecuteFunctions: any;
+describe('Segment Resource', () => {
+	let mockExecuteFunctions: any;
 
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.userpilot.com/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-api-key',
+				baseUrl: 'https://api.userpilot.com/v1',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn(),
+			},
+		};
+	});
 
-  it('should get all segments successfully', async () => {
-    const mockSegments = {
-      data: [
-        { id: '1', name: 'Test Segment 1' },
-        { id: '2', name: 'Test Segment 2' },
-      ],
-    };
+	describe('getSegments operation', () => {
+		it('should get segments successfully', async () => {
+			const mockResponse = { segments: [{ id: '123', name: 'Test Segment' }] };
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getSegments')
+				.mockReturnValueOnce(50)
+				.mockReturnValueOnce(0);
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'getAllSegments';
-      return null;
-    });
+			const result = await executeSegmentOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockSegments);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
 
-    const result = await executeSegmentsOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
+		it('should handle getSegments error', async () => {
+			mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('getSegments');
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockSegments);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.userpilot.com/v1/segments',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-    });
-  });
+			const result = await executeSegmentOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-  it('should get a specific segment successfully', async () => {
-    const mockSegment = {
-      id: '123',
-      name: 'Test Segment',
-      criteria: { property: 'value' },
-    };
+			expect(result).toEqual([{ json: { error: 'API Error' }, pairedItem: { item: 0 } }]);
+		});
+	});
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'getSegment';
-      if (param === 'segmentId') return '123';
-      return null;
-    });
+	describe('getSegment operation', () => {
+		it('should get segment successfully', async () => {
+			const mockResponse = { id: '123', name: 'Test Segment' };
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getSegment')
+				.mockReturnValueOnce('123');
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockSegment);
+			const result = await executeSegmentOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    const result = await executeSegmentsOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockSegment);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.userpilot.com/v1/segments/123',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-    });
-  });
+	describe('createSegment operation', () => {
+		it('should create segment successfully', async () => {
+			const mockResponse = { id: '123', name: 'New Segment' };
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('createSegment')
+				.mockReturnValueOnce('New Segment')
+				.mockReturnValueOnce({ filter: 'active' })
+				.mockReturnValueOnce('Test description');
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-  it('should create a segment successfully', async () => {
-    const mockCreatedSegment = {
-      id: '456',
-      name: 'New Segment',
-      criteria: { event: 'signup' },
-      description: 'Test description',
-    };
+			const result = await executeSegmentOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'createSegment';
-      if (param === 'name') return 'New Segment';
-      if (param === 'criteria') return '{"event":"signup"}';
-      if (param === 'description') return 'Test description';
-      return null;
-    });
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockCreatedSegment);
+	describe('updateSegment operation', () => {
+		it('should update segment successfully', async () => {
+			const mockResponse = { id: '123', name: 'Updated Segment' };
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('updateSegment')
+				.mockReturnValueOnce('123')
+				.mockReturnValueOnce('Updated Segment')
+				.mockReturnValueOnce({ filter: 'inactive' });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    const result = await executeSegmentsOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
+			const result = await executeSegmentOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockCreatedSegment);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.userpilot.com/v1/segments',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        name: 'New Segment',
-        criteria: { event: 'signup' },
-        description: 'Test description',
-      },
-      json: true,
-    });
-  });
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-  it('should update a segment successfully', async () => {
-    const mockUpdatedSegment = {
-      id: '789',
-      name: 'Updated Segment',
-      criteria: { event: 'updated' },
-    };
+	describe('deleteSegment operation', () => {
+		it('should delete segment successfully', async () => {
+			const mockResponse = { success: true };
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('deleteSegment')
+				.mockReturnValueOnce('123');
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'updateSegment';
-      if (param === 'segmentId') return '789';
-      if (param === 'criteria') return '{"event":"updated"}';
-      return null;
-    });
+			const result = await executeSegmentOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockUpdatedSegment);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-    const result = await executeSegmentsOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
+	describe('getSegmentUsers operation', () => {
+		it('should get segment users successfully', async () => {
+			const mockResponse = { users: [{ id: 'user1', email: 'test@example.com' }] };
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getSegmentUsers')
+				.mockReturnValueOnce('123')
+				.mockReturnValueOnce(50)
+				.mockReturnValueOnce(0);
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockUpdatedSegment);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'PUT',
-      url: 'https://api.userpilot.com/v1/segments/789',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        criteria: { event: 'updated' },
-      },
-      json: true,
-    });
-  });
+			const result = await executeSegmentOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-  it('should get segment users successfully', async () => {
-    const mockUsers = {
-      data: [
-        { id: 'user1', email: 'user1@example.com' },
-        { id: 'user2', email: 'user2@example.com' },
-      ],
-      pagination: { page: 1, limit: 50, total: 2 },
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'getSegmentUsers';
-      if (param === 'segmentId') return '123';
-      if (param === 'page') return 1;
-      if (param === 'limit') return 50;
-      return null;
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockUsers);
-
-    const result = await executeSegmentsOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockUsers);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.userpilot.com/v1/segments/123/users',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      qs: {
-        page: 1,
-        limit: 50,
-      },
-      json: true,
-    });
-  });
-
-  it('should handle API errors properly', async () => {
-    const mockError = new Error('API Error');
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'getAllSegments';
-      return null;
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-
-    await expect(
-      executeSegmentsOperations.call(mockExecuteFunctions, [{ json: {} }]),
-    ).rejects.toThrow('API Error');
-  });
-
-  it('should continue on fail when configured', async () => {
-    const mockError = new Error('API Error');
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'getAllSegments';
-      return null;
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-
-    const result = await executeSegmentsOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual({ error: 'API Error' });
-  });
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 });
 
-describe('Surveys Resource', () => {
-  let mockExecuteFunctions: any;
+describe('Checklist Resource', () => {
+	let mockExecuteFunctions: any;
 
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.userpilot.com/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://api.userpilot.com/v1',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn(),
+			},
+		};
+	});
 
-  test('getAllSurveys should retrieve all surveys', async () => {
-    const mockSurveys = [
-      { id: 'survey_1', name: 'NPS Survey', type: 'nps', status: 'active' },
-      { id: 'survey_2', name: 'CSAT Survey', type: 'csat', status: 'active' },
-    ];
+	describe('getChecklists operation', () => {
+		it('should get checklists successfully', async () => {
+			mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
+				const params: { [key: string]: any } = {
+					operation: 'getChecklists',
+					limit: 50,
+					offset: 0,
+				};
+				return params[param];
+			});
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getAllSurveys';
-        case 'type': return 'nps';
-        case 'status': return 'active';
-        default: return '';
-      }
-    });
+			const mockResponse = {
+				checklists: [
+					{ id: '1', name: 'Onboarding Checklist' },
+					{ id: '2', name: 'Feature Adoption Checklist' },
+				],
+			};
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockSurveys);
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    const items = [{ json: {} }];
-    const result = await executeSurveysOperations.call(mockExecuteFunctions, items);
+			const result = await executeChecklistOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockSurveys);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.userpilot.com/v1/surveys',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      qs: { type: 'nps', status: 'active' },
-      json: true,
-    });
-  });
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
 
-  test('getSurvey should retrieve specific survey', async () => {
-    const mockSurvey = {
-      id: 'survey_123',
-      name: 'Customer Satisfaction Survey',
-      type: 'csat',
-      questions: [{ id: 'q1', text: 'How satisfied are you?' }],
-    };
+		it('should handle getChecklists errors', async () => {
+			mockExecuteFunctions.getNodeParameter.mockReturnValue('getChecklists');
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getSurvey';
-        case 'surveyId': return 'survey_123';
-        default: return '';
-      }
-    });
+			const result = await executeChecklistOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockSurvey);
+			expect(result).toEqual([{ json: { error: 'API Error' }, pairedItem: { item: 0 } }]);
+		});
+	});
 
-    const items = [{ json: {} }];
-    const result = await executeSurveysOperations.call(mockExecuteFunctions, items);
+	describe('getChecklist operation', () => {
+		it('should get checklist by ID successfully', async () => {
+			mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
+				const params: { [key: string]: any } = {
+					operation: 'getChecklist',
+					checklistId: 'checklist-123',
+				};
+				return params[param];
+			});
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockSurvey);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.userpilot.com/v1/surveys/survey_123',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-    });
-  });
+			const mockResponse = {
+				id: 'checklist-123',
+				name: 'Onboarding Checklist',
+				tasks: [
+					{ id: '1', name: 'Complete Profile', completed: false },
+					{ id: '2', name: 'Upload Avatar', completed: true },
+				],
+			};
 
-  test('createSurveyResponse should submit survey response', async () => {
-    const mockResponse = {
-      id: 'response_123',
-      survey_id: 'survey_456',
-      user_id: 'user_789',
-      created_at: '2023-01-01T00:00:00Z',
-    };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'createSurveyResponse';
-        case 'surveyId': return 'survey_456';
-        case 'userId': return 'user_789';
-        case 'answers': return '{"q1": 5, "q2": "Great service!"}';
-        default: return '';
-      }
-    });
+			const result = await executeChecklistOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-    const items = [{ json: {} }];
-    const result = await executeSurveysOperations.call(mockExecuteFunctions, items);
+	describe('createChecklist operation', () => {
+		it('should create checklist successfully', async () => {
+			mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
+				const params: { [key: string]: any } = {
+					operation: 'createChecklist',
+					name: 'New Checklist',
+					tasks: '[{"name": "Task 1"}, {"name": "Task 2"}]',
+					targetSegment: 'new-users',
+				};
+				return params[param];
+			});
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.userpilot.com/v1/surveys/survey_456/responses',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        user_id: 'user_789',
-        answers: { q1: 5, q2: 'Great service!' },
-      },
-      json: true,
-    });
-  });
+			const mockResponse = {
+				id: 'checklist-456',
+				name: 'New Checklist',
+				target_segment: 'new-users',
+			};
 
-  test('getSurveyResponses should retrieve survey responses with date range', async () => {
-    const mockResponses = [
-      { id: 'response_1', answers: { q1: 8 }, created_at: '2023-01-01T00:00:00Z' },
-      { id: 'response_2', answers: { q1: 9 }, created_at: '2023-01-02T00:00:00Z' },
-    ];
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getSurveyResponses';
-        case 'surveyId': return 'survey_123';
-        case 'dateRange': return {
-          range: {
-            startDate: '2023-01-01T00:00:00.000Z',
-            endDate: '2023-01-31T23:59:59.000Z',
-          },
-        };
-        default: return '';
-      }
-    });
+			const result = await executeChecklistOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponses);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-    const items = [{ json: {} }];
-    const result = await executeSurveysOperations.call(mockExecuteFunctions, items);
+	describe('updateChecklist operation', () => {
+		it('should update checklist successfully', async () => {
+			mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
+				const params: { [key: string]: any } = {
+					operation: 'updateChecklist',
+					checklistId: 'checklist-123',
+					tasks: '[{"name": "Updated Task 1"}, {"name": "Updated Task 2"}]',
+				};
+				return params[param];
+			});
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponses);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.userpilot.com/v1/surveys/survey_123/responses',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      qs: {
-        start_date: '2023-01-01T00:00:00.000Z',
-        end_date: '2023-01-31T23:59:59.000Z',
-      },
-      json: true,
-    });
-  });
+			const mockResponse = {
+				id: 'checklist-123',
+				name: 'Updated Checklist',
+				tasks: [
+					{ name: 'Updated Task 1' },
+					{ name: 'Updated Task 2' },
+				],
+			};
 
-  test('getSurveyAnalytics should retrieve survey analytics', async () => {
-    const mockAnalytics = {
-      total_responses: 100,
-      nps_score: 75,
-      response_rate: 0.25,
-      distribution: { promoters: 60, passives: 30, detractors: 10 },
-    };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getSurveyAnalytics';
-        case 'surveyId': return 'survey_nps';
-        case 'dateRange': return {};
-        default: return '';
-      }
-    });
+			const result = await executeChecklistOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockAnalytics);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-    const items = [{ json: {} }];
-    const result = await executeSurveysOperations.call(mockExecuteFunctions, items);
+	describe('deleteChecklist operation', () => {
+		it('should delete checklist successfully', async () => {
+			mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
+				const params: { [key: string]: any } = {
+					operation: 'deleteChecklist',
+					checklistId: 'checklist-123',
+				};
+				return params[param];
+			});
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockAnalytics);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.userpilot.com/v1/surveys/survey_nps/analytics',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      qs: {},
-      json: true,
-    });
-  });
+			const mockResponse = { success: true };
 
-  test('updateSurveyStatus should update survey status', async () => {
-    const mockUpdatedSurvey = {
-      id: 'survey_123',
-      name: 'Test Survey',
-      status: 'inactive',
-      updated_at: '2023-01-01T00:00:00Z',
-    };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'updateSurveyStatus';
-        case 'surveyId': return 'survey_123';
-        case 'status': return 'inactive';
-        default: return '';
-      }
-    });
+			const result = await executeChecklistOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockUpdatedSurvey);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-    const items = [{ json: {} }];
-    const result = await executeSurveysOperations.call(mockExecuteFunctions, items);
+	describe('completeChecklistTask operation', () => {
+		it('should complete checklist task successfully', async () => {
+			mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
+				const params: { [key: string]: any } = {
+					operation: 'completeChecklistTask',
+					checklistId: 'checklist-123',
+					userId: 'user-456',
+					taskId: 'task-789',
+				};
+				return params[param];
+			});
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockUpdatedSurvey);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'PUT',
-      url: 'https://api.userpilot.com/v1/surveys/survey_123/status',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: { status: 'inactive' },
-      json: true,
-    });
-  });
+			const mockResponse = {
+				success: true,
+				task_id: 'task-789',
+				completed: true,
+			};
 
-  test('should handle API errors correctly', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getSurvey';
-        case 'surveyId': return 'invalid_survey';
-        default: return '';
-      }
-    });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    const apiError = new Error('Survey not found');
-    (apiError as any).response = {
-      statusCode: 404,
-      body: { error: 'Survey not found', code: 'SURVEY_NOT_FOUND' },
-    };
+			const result = await executeChecklistOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
+});
 
-    const items = [{ json: {} }];
+describe('Survey Resource', () => {
+	let mockExecuteFunctions: any;
 
-    await expect(
-      executeSurveysOperations.call(mockExecuteFunctions, items),
-    ).rejects.toThrow();
-  });
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://api.userpilot.com/v1',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+			},
+		};
+	});
 
-  test('should handle continue on fail', async () => {
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getSurvey';
-        case 'surveyId': return 'invalid_survey';
-        default: return '';
-      }
-    });
+	test('getSurveys operation should retrieve surveys list', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getSurveys')
+			.mockReturnValueOnce(20)
+			.mockReturnValueOnce(0)
+			.mockReturnValueOnce('nps');
 
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+		const mockResponse = {
+			surveys: [
+				{ id: '1', name: 'NPS Survey', type: 'nps' },
+				{ id: '2', name: 'Feedback Survey', type: 'feedback' },
+			],
+		};
 
-    const items = [{ json: {} }];
-    const result = await executeSurveysOperations.call(mockExecuteFunctions, items);
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    expect(result).toHaveLength(1);
-    expect(result[0].json.error).toBe('API Error');
-  });
+		const result = await executeSurveyOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+		expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+			method: 'GET',
+			url: 'https://api.userpilot.com/v1/surveys?limit=20&offset=0&type=nps',
+			headers: {
+				'Authorization': 'Bearer test-key',
+				'Content-Type': 'application/json',
+			},
+			json: true,
+		});
+		expect(result[0].json).toEqual(mockResponse);
+	});
+
+	test('createSurvey operation should create a new survey', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('createSurvey')
+			.mockReturnValueOnce('Test Survey')
+			.mockReturnValueOnce('nps')
+			.mockReturnValueOnce('[{"question": "How likely are you to recommend us?"}]')
+			.mockReturnValueOnce('premium_users');
+
+		const mockResponse = { id: '123', name: 'Test Survey', type: 'nps' };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+		const result = await executeSurveyOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+		expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+			method: 'POST',
+			url: 'https://api.userpilot.com/v1/surveys',
+			headers: {
+				'Authorization': 'Bearer test-key',
+				'Content-Type': 'application/json',
+			},
+			body: {
+				name: 'Test Survey',
+				type: 'nps',
+				questions: [{ question: 'How likely are you to recommend us?' }],
+				target_segment: 'premium_users',
+			},
+			json: true,
+		});
+		expect(result[0].json).toEqual(mockResponse);
+	});
+
+	test('should handle errors appropriately', async () => {
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('getSurveys');
+		mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+
+		await expect(
+			executeSurveyOperations.call(mockExecuteFunctions, [{ json: {} }])
+		).rejects.toThrow('API Error');
+	});
+
+	test('should continue on fail when configured', async () => {
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('getSurveys');
+		mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+		mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+
+		const result = await executeSurveyOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+		expect(result[0].json).toEqual({ error: 'API Error' });
+	});
 });
 });
